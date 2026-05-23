@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_training_category_tree" model="ir.ui.view">
+        <field name="name">training.category.tree</field>
+        <field name="model">training.category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="course_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_training_category_form" model="ir.ui.view">
+        <field name="name">training.category.form</field>
+        <field name="model">training.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="course_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Enter category description..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_training_category" model="ir.actions.act_window">
+        <field name="name">Training Categories</field>
+        <field name="res_model">training.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first training category!
+            </p>
+            <p>
+                Categories help organize your training programs (e.g., Compliance, Technical Skills, Soft Skills).
+            </p>
+        </field>
+    </record>
+</odoo>

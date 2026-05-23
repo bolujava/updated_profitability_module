@@ -1,0 +1,11 @@
+/* Sticky header for the form */
+.oe_form_header {
+    position: sticky !important;  /* Use !important to override any other conflicting styles */
+    top: 0;
+    z-index: 10;  /* Ensures the header stays on top of other elements */
+    background-color: white;  /* Optional: Make sure the background is solid */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  /* Optional: Add a shadow for better visibility */
+}
+ form {
+    overflow: visible !important;
+} 

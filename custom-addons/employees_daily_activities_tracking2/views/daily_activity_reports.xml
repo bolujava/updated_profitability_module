@@ -1,0 +1,14 @@
+<odoo>
+    <record id="view_daily_activity_pivot" model="ir.ui.view">
+        <field name="name">employee.daily.activity.pivot</field>
+        <field name="model">employee.daily.activity</field>
+        <field name="arch" type="xml">
+            <pivot string="Daily / Weekly Activities">
+                <field name="employee_id" type="row"/>
+                <field name="department_id" type="row"/>
+                <field name="start_datetime" interval="day" type="col"/>
+                <field name="time_spent_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+</odoo>

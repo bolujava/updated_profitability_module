@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fix for hr_timesheet: Add timesheet_ids -->
+    <record id="view_task_form2_inherit_timesheet_fix" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.timesheet.fix</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="priority" eval="5"/> <!-- Load early -->
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="timesheet_ids" invisible="context.get('default_invoice_id', False)">
+                    <tree editable="bottom">
+                        <field name="date" string="Date"/>
+                        <field name="employee_id" string="Employee"/>
+                        <field name="unit_amount" string="Hours"/>
+                        <field name="description" string="Description"/>
+                        <field name="planning_slot_id" string="Planning Slot" optional="show"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Fix for sale_timesheet: Extend timesheet_ids tree -->
+    <record id="view_sale_service_inherit_form2_fix" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.timesheet.sale.fix</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="lba_profitability_module.view_task_form2_inherit_timesheet_fix"/>
+        <field name="priority" eval="10"/> <!-- Load after view_task_form2_inherit_timesheet_fix -->
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='timesheet_ids']/tree" position="inside">
+                <field name="is_so_line_edited" column_invisible="True"/>
+                <field name="timesheet_invoice_id" column_invisible="True"/>
+                <field name="so_line" widget="so_line_field" groups="!sales_team.group_sale_salesman" column_invisible="not parent.allow_billable" readonly="readonly_timesheet" context="{'with_remaining_hours': True, 'with_price_unit': True}" options="{'no_create': True, 'no_open': True}" domain="[('is_service', '=', True), ('order_partner_id.commercial_partner_id.id', 'parent_of', parent.partner_id), ('is_expense', '=', False), ('state', '=', 'sale'), ('is_downpayment', '=', False)]" optional="hide"/>
+                <field name="so_line" widget="so_line_field" groups="sales_team.group_sale_salesman" column_invisible="not parent.allow_billable" readonly="readonly_timesheet" context="{'with_remaining_hours': True, 'with_price_unit': True}" options="{'no_create': True, 'no_open': True}" domain="[('is_service', '=', True), ('order_partner_id.commercial_partner_id.id', 'parent_of', parent.partner_id), ('is_expense', '=', False), ('state', '=', 'sale'), ('is_downpayment', '=', False)]" optional="hide"/>
+            </xpath>
+            <xpath expr="//field[@name='timesheet_ids']/form//field[@name='unit_amount']" position="after">
+                <field name="timesheet_invoice_id" invisible="1"/>
+                <field name="so_line" widget="so_line_field" groups="!sales_team.group_sale_salesman" invisible="not parent.allow_billable" readonly="readonly_timesheet" context="{'with_remaining_hours': True, 'with_price_unit': True}" options="{'no_create': True, 'no_open': True}" domain="[('is_service', '=', True), ('order_partner_id', 'child_of', parent.partner_id), ('is_expense', '=', False), ('state', '=', 'sale')]" placeholder="Non-billable" optional="hide"/>
+                <field name="so_line" widget="so_line_field" groups="sales_team.group_sale_salesman" options="{'no_create': True, 'no_open': True}" context="{'create': False, 'edit': False, 'delete': False, 'with_price_unit': True}" invisible="not parent.allow_billable" domain="[('is_service', '=', True), ('order_partner_id', 'child_of', parent.partner_id), ('is_expense', '=', False), ('state', '=', 'sale')]" readonly="readonly_timesheet" placeholder="Non-billable"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Fix for sale_timesheet_enterprise -->
+    <record id="project_sharing_inherit_project_task_view_form_fix" model="ir.ui.view">
+        <field name="name">project.sharing.inherit.project.task.view.form.fix</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="sale_timesheet_enterprise.project_sharing_inherit_project_task_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <field name="planned_hours" invisible="1"/>
+                <field name="encode_uom_in_days" invisible="1"/>
+                <field name="remaining_hours" invisible="1"/>
+                <field name="portal_remaining_hours" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_assign_to_me']" position="attributes">
+                <attribute name="attrs">{'invisible': ['|', '|', ('planned_hours', '=', 0.0), ('encode_uom_in_days', '=', False), ('portal_remaining_hours', '&lt;', 0)]}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Fix for sale.order: Add timesheet_count and timesheet_ids -->
+    <record id="sale_order_view_form_inherit_timesheet_fix" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.timesheet.fix</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="timesheet_count" string="Timesheet Count" invisible="1"/>
+                <field name="timesheet_ids" string="Timesheets" invisible="context.get('default_invoice_id', False)">
+                    <tree editable="bottom">
+                        <field name="date" string="Date"/>
+                        <field name="employee_id" string="Employee"/>
+                        <field name="unit_amount" string="Hours"/>
+                        <field name="description" string="Description"/>
+                        <field name="planning_slot_id" string="Planning Slot" optional="show"/>
+                        <field name="so_line" string="Sales Order Line" optional="show"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+</odoo>

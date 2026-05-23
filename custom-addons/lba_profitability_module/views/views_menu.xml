@@ -1,0 +1,16 @@
+<odoo>
+    <menuitem id="menu_project_owner" name="My Projects"
+              parent="project.menu_projects"
+              action="project.open_view_project_all"
+              groups="project_enhancement.group_project_manager,project_enhancement.group_team_lead"/>
+
+    <menuitem id="menu_department_manager" name="Department Projects"
+              parent="project.menu_projects"
+              action="project.open_view_project_all"
+              groups="project_enhancement.group_department_manager"/>
+
+    <menuitem id="menu_project_admin" name="All Projects"
+              parent="project.menu_projects"
+              action="project.open_view_project_all"
+              groups="project_enhancement.group_admin,project_enhancement.group_pmo"/>
+</odoo>

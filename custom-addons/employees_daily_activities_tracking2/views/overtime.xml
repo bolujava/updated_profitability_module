@@ -1,0 +1,156 @@
+<odoo>
+    <!-- ============================= -->
+    <!-- OVERTIME FORM VIEW -->
+    <!-- ============================= -->
+    <record id="view_employee_overtime_form" model="ir.ui.view">
+        <field name="name">employee.overtime.form</field>
+        <field name="model">employee.overtime</field>
+        <field name="arch" type="xml">
+            <form string="Employee Overtime">
+                <header>
+                    <button name="action_confirm"
+                            type="object"
+                            string="Confirm"
+                            class="btn-primary"
+                            attrs="{'invisible': [('state', '=', 'confirmed')]}"/>
+                    <button name="action_mark_draft"
+                        string="Mark as Draft"
+                        type="object"
+                        states="confirmed"
+                        class="btn-secondary"/>
+        
+                    <field name="state" widget="statusbar"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="department_id" invisible="1"/>
+
+                            <field name="custom_activity_type_id"/>
+                            <field name="activity_name" readonly="1"/>
+                            <field name="activity_res_model" invisible="1"/>
+                            <field name="helpdesk_ticket_id"
+                                attrs="{'invisible':[('activity_res_model','!=','helpdesk.ticket')]}"/>
+
+                            <!-- Technical Project -->
+                            <field name="project_id"
+                                attrs="{'invisible':[('activity_res_model','!=','project.project')]}"/>
+
+                            <!-- Technical Pre-Sales -->
+                            <field name="crm_opportunity_id"
+                                attrs="{'invisible':[('activity_res_model','!=','crm.lead')]}"/>
+
+                            <field name="training_attendee_id"
+                                attrs="{'invisible':[('activity_res_model','!=','training.course')]}"/>
+                            
+                            <field name="start_datetime"/>
+                            <field name="end_datetime"/>
+                            <field name="daily_overtime_hours" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="weekly_overtime_hours" readonly="1"/>
+                            <field name="weekly_start" readonly="1"/>
+                            <field name="weekly_end" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+
+    <!-- ============================= -->
+    <!-- OVERTIME TREE VIEW -->
+    <!-- ============================= -->
+    <record id="view_employee_overtime_tree" model="ir.ui.view">
+        <field name="name">employee.overtime.tree</field>
+        <field name="model">employee.overtime</field>
+        <field name="arch" type="xml">
+            <tree string="Employee Overtime">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="daily_overtime_hours"/>
+                <field name="weekly_overtime_hours"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============================= -->
+    <!-- OVERTIME SEARCH VIEW -->
+    <!-- ============================= -->
+    <record id="view_employee_overtime_search" model="ir.ui.view">
+        <field name="name">employee.overtime.search</field>
+        <field name="model">employee.overtime</field>
+        <field name="arch" type="xml">
+            <search string="Employee Overtime">
+                <!-- Searchable Fields -->
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="state"/>
+
+                <!-- Time-based Filters -->
+                <filter string="Daily"
+                        name="daily"
+                        domain="[]"
+                        context="{'group_by':'date:day'}"/>
+                <filter string="Weekly"
+                        name="weekly"
+                        domain="[]"
+                        context="{'group_by':'date:week'}"/>
+                <filter string="Monthly"
+                        name="monthly"
+                        domain="[]"
+                        context="{'group_by':'date:month'}"/>
+                <filter string="Yearly"
+                        name="yearly"
+                        domain="[]"
+                        context="{'group_by':'date:year'}"/>
+
+                <!-- State Filter -->
+                <filter string="Confirmed"
+                        name="confirmed"
+                        domain="[('state','=','confirmed')]"/>
+
+                <!-- Group By Filters -->
+                <filter string="Group by Employee"
+                        name="group_by_employee"
+                        context="{'group_by':'employee_id'}"/>
+                <filter string="Group by Date"
+                        name="group_by_date"
+                        context="{'group_by':'date'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================= -->
+    <!-- ACTION -->
+    <!-- ============================= -->
+    <record id="action_employee_overtime" model="ir.actions.act_window">
+        <field name="name">Employee Overtime</field>
+        <field name="res_model">employee.overtime</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ============================= -->
+    <!-- MENU -->
+    <!-- ============================= -->
+    <!-- Root menu under Daily Activities -->
+    <menuitem id="menu_employee_overtime_root"
+              name="Overtime"
+              parent="menu_daily_activity_root"
+              sequence="20"/>
+
+    <!-- Overtime menu linked to action -->
+    <menuitem id="menu_employee_overtime"
+              name="Employee Overtime"
+              parent="menu_employee_overtime_root"
+              action="action_employee_overtime"
+              sequence="10"/>
+</odoo>

@@ -1,0 +1,108 @@
+<odoo>
+    <data>
+        <!-- Email Template for Budget Alert -->
+        <record id="email_template_budget_alert" model="mail.template">
+            <field name="name">Budget Alert Template</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="subject">Alert: Budget threshold exceeded for project: ${object.name}</field>
+            <field name="email_from">operation@lotusbetaanalytics.com</field>
+            <field name="body_html">
+                <![CDATA[
+                    <p>Dear User,</p>
+                    <p>The project <b>${object.name}</b> has exceeded the configured budget threshold of ${object.budget_alert_threshold}%.</p>
+                    <p>Total Budget: ${object.budget} ${object.currency_id.symbol}</p>
+                    <p>Budget Utilized: ${object.budget_utilized} ${object.currency_id.symbol}</p>
+                    <p>Remaining Budget: ${object.budget_remaining} ${object.currency_id.symbol}</p>
+                ]]>
+            </field>
+        </record>
+        <!-- Email Template for Project Manager Role -->
+        <record id="email_template_project_manager_assigned" model="mail.template">
+            <field name="name">Project Manager Role Assigned</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="subject">You have been assigned as Project Manager for the project: ${object.name}</field>
+            <field name="body_html">
+                <![CDATA[
+                <p>Hello ${object.project_manager.name},</p>
+                <p>You have been assigned as the Project Manager for the project: ${object.name}.</p>
+                <p>Please <a href="${accept_url}">click here</a> to accept the role or <a href="${decline_url}">click here</a> to decline the role.</p>
+                <p>Best regards,</p>
+                <p>The Odoo Team</p>
+                ]]>
+            </field>
+            <field name="email_from">operation@lotusbetaanalytics.com</field>
+<!--            <field name="email_from">${object.department_id.manager_id.email or user.email}</field>-->
+            <field name="email_to">${object.project_manager.user_id.email}</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Email Template for Team Lead Role -->
+        <record id="email_template_project_team_lead_assigned" model="mail.template">
+            <field name="name">Project Team Lead Role Assigned</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="subject">You have been assigned as Team Lead for the project: ${object.name}</field>
+            <field name="body_html">
+                <![CDATA[
+                <p>Hello ${object.team_lead_id.name},</p>
+                <p>You have been assigned as the Team Lead for the project: ${object.name}.</p>
+                <p>Please <a href="${accept_url}">click here</a> to accept the role or <a href="${decline_url}">click here</a> to decline the role.</p>
+                <p>Best regards,</p>
+                <p>The Odoo Team</p>
+                ]]>
+            </field>
+<!--            <field name="email_from">${object.department_id.manager_id.email or user.email}</field>-->
+            <field name="email_from">operation@lotusbetaanalytics.com</field>
+            <field name="email_to">${object.team_lead_id.user_id.email}</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Email Template for Department Manager Role -->
+        <record id="email_template_project_department_manager_assigned" model="mail.template">
+            <field name="name">Project Department Manager Role Assigned</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="subject">You have been assigned as Department Manager for the project: ${object.name}</field>
+            <field name="body_html">
+                <![CDATA[
+                <p>Hello ${object.department_manager_id.name},</p>
+                <p>You have been assigned as the Department Manager for the project: ${object.name}.</p>
+                <p>Please <a href="${accept_url}">click here</a> to accept the role or <a href="${decline_url}">click here</a> to decline the role.</p>
+                <p>Best regards,</p>
+                <p>The Odoo Team</p>
+                ]]>
+            </field>
+            <field name="email_from">operation@lotusbetaanalytics.com</field>
+<!--            <field name="email_from">${object.department_id.manager_id.email or user.email}</field>-->
+            <field name="email_to">${object.department_manager_id.user_id.email}</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Email template for project creation -->
+        <record id="email_template_project_creation" model="mail.template">
+            <field name="name">Project Creation</field>
+            <field name="subject">New Project Onboarded: ${object.name}</field>
+            <field name="email_from">operation@lotusbetaanalytics.com</field>
+            <field name="body_html">
+                <![CDATA[
+                <p>Dear ${object.user_id.name},</p>
+                <p>A new project has been onboarded: <b>${object.name}</b>.</p>
+                <p>The project was created by ${object.create_uid.name} from Sales Order: ${object.sale_order_id.name if object.sale_order_id else 'N/A'}. This project requires your attention.</p>
+                <hr style="margin: 20px 0;">
+                <p>Access the project details here: <a href="${object.get_base_url()}/web#id=${object.id}&model=project.project&view_type=form">View Project in Odoo</a></p>
+
+                % if object.document_upload_link:
+                <hr style="margin: 20px 0;">
+                <p><strong>📎 Kindly visit this link to see and upload documents pertaining to this project:</strong></p>
+                <p><a href="${object.document_upload_link}" style="background-color: #0078D4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin: 10px 0;">📁 Open Microsoft Teams Channel</a></p>
+                <p><small>Link: ${object.document_upload_link}</small></p>
+                % else:
+                <hr style="margin: 20px 0;">
+                <p style="color: #ff6b6b; padding: 10px; background-color: #fff3cd; border-radius: 5px;">
+                <strong>⚠️ Note:</strong> No Teams channel link has been provided for document sharing. Please add a Teams link to the project or contact the sales team.</p>
+                % endif
+                ]]>
+            </field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="email_to">${object.user_id.email}</field>
+        </record>
+    </data>
+</odoo>

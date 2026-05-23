@@ -1,0 +1,61 @@
+<odoo>
+
+    <record id="view_daily_activity_form_inherit_task"
+            model="ir.ui.view">
+
+        <field name="name">employee.daily.activity.form.inherit.task</field>
+        <field name="model">employee.daily.activity</field>
+
+        <!-- inherit your colleague's form -->
+        <field name="inherit_id"
+               ref="employees_daily_activities_tracking2.view_daily_activity_form"/>
+
+        <field name="arch" type="xml">
+
+            <!-- Insert task AFTER project -->
+            <xpath expr="//field[@name='project_id']"
+                   position="after">
+
+                <field name="task_id"
+                       attrs="{
+                           'invisible':[
+                               '|',
+                               ('activity_res_model','!=','project.project'),
+                               ('project_id','=',False)
+                           ]
+                       }"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_employee_overtime_form_inherit_task"
+            model="ir.ui.view">
+
+        <field name="name">employee.overtime.form.inherit.task</field>
+        <field name="model">employee.overtime</field>
+
+        <!-- inherit the original overtime form -->
+        <field name="inherit_id"
+               ref="employees_daily_activities_tracking2.view_employee_overtime_form"/>
+
+        <field name="arch" type="xml">
+
+            <!-- Insert task AFTER project -->
+            <xpath expr="//field[@name='project_id']"
+                   position="after">
+
+                <field name="task_id"
+                       attrs="{
+                           'invisible': [
+                               '|',
+                               ('activity_res_model','!=','project.project'),
+                               ('project_id','=',False)
+                           ]
+                       }"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

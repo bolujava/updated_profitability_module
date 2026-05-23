@@ -1,0 +1,1102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="custom_minimal_layout" name="Custom Minimal Layout">
+        <t t-name="custom_minimal_layout">
+            <div class="page">
+                <t t-raw="0"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_training_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="custom_training_management.report_training_summary_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_training_summary_document">
+        <t t-call="custom_training_management.custom_minimal_layout">
+            <div class="page">
+                <div class="row" style="border-bottom: 2px solid #2E86C1; margin-bottom: 20px;">
+                    <div class="col-6">
+                        <h2 style="color: #2E86C1;">Training Summary Report</h2>
+                    </div>
+                    <div class="col-6 text-right">
+                        <p>
+                            <strong>Date:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%B %d, %Y')"/>
+                        </p>
+                        <p>
+                            <strong>Report ID:</strong> <span t-field="doc.training_code"/>-SUM-<span t-esc="doc.id"/>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-12">
+                        <h4>Employee: <span t-field="doc.employee_id.name"/></h4>
+                        <p>
+                            <strong>Department:</strong> <span t-field="doc.department_id.name"/> |
+                            <strong>Training Code:</strong> <span t-field="doc.training_code"/> |
+                            <strong>Training:</strong> <span t-field="doc.course_id.name"/>
+                        </p>
+                    </div>
+                </div>
+
+                <table class="table table-bordered" style="margin-bottom: 20px;">
+                    <thead style="background-color: #f8f9fa;">
+                        <tr>
+                            <th>Training Code</th>
+                            <th>Training Title</th>
+                            <th>Start Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span t-field="doc.training_code"/></td>
+                            <td><span t-field="doc.course_id.name"/></td>
+                            <td><span t-field="doc.date_start"/></td>
+                            <td><span t-field="doc.date_end"/></td>
+                            <td>
+                                <span t-field="doc.state"/>
+                                <t t-if="doc.is_overdue">
+                                    <span class="badge badge-danger">OVERDUE</span>
+                                </t>
+                            </td>
+                            <td>
+                                <span t-field="doc.completion_percentage"/>%
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <t t-if="doc.course_id.is_paid">
+                    <h4>Payment Information</h4>
+                    <table class="table table-bordered" style="margin-bottom: 20px;">
+                        <thead style="background-color: #f8f9fa;">
+                            <tr>
+                                <th>Training Fee</th>
+                                <th>Amount Paid</th>
+                                <th>Outstanding</th>
+                                <th>Payment Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <t t-set="currency" t-value="doc.course_id.currency_id or doc.company_id.currency_id"/>
+                                    <span t-esc="format_currency(doc.course_id.training_fee, currency)"/>
+                                </td>
+                                <td>
+                                    <t t-set="paid_amount" t-value="sum(doc.payment_ids.filtered(lambda p: p.state == 'paid').mapped('amount'))"/>
+                                    <span t-esc="format_currency(paid_amount, currency)"/>
+                                </td>
+                                <td>
+                                    <span t-esc="format_currency(doc.course_id.training_fee - paid_amount, currency)"/>
+                                </td>
+                                <td>
+                                    <span t-field="doc.payment_status"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <t t-if="doc.state == 'completed'">
+                    <h4>Certificate Information</h4>
+                    <table class="table table-bordered" style="margin-bottom: 20px;">
+                        <tr>
+                            <th width="30%">Completion Date</th>
+                            <td><span t-field="doc.date_completed"/></td>
+                        </tr>
+                        <tr>
+                            <th>Certificate Uploaded</th>
+                            <td>
+                                <t t-if="doc.certificate_uploaded">
+                                    <span class="badge badge-success">YES</span>
+                                    <span t-field="doc.certificate_filename"/>
+                                </t>
+                                <t t-else="">
+                                    <span class="badge badge-warning">NOT UPLOADED</span>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                </t>
+
+                <t t-if="doc.notes">
+                    <h4>Notes/Comments</h4>
+                    <p class="well well-sm" t-field="doc.notes"/>
+                </t>
+
+                <div class="row" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px;">
+
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_training_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="custom_training_management.report_training_certificate_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_training_certificate_document">
+        <t t-call="custom_training_management.custom_minimal_layout">
+            <div class="page" style="text-align: center;">
+                <div style="border: 10px solid #2E86C1; padding: 40px; margin: 20px; border-radius: 20px;">
+
+                    <h1 style="color: #2E86C1; font-size: 48px; margin-bottom: 10px;">
+                        <span t-field="get_company().name"/>
+                    </h1>
+
+                    <h2 style="color: #555; font-size: 36px; margin-bottom: 30px;">
+                        Certificate of Completion
+                    </h2>
+
+                    <p style="font-size: 18px; margin-bottom: 40px;">
+                        This is to certify that
+                    </p>
+
+                    <h3 style="font-size: 42px; font-weight: bold; margin-bottom: 30px;">
+                        <span t-field="doc.employee_id.name"/>
+                    </h3>
+
+                    <p style="font-size: 18px; margin-bottom: 20px;">
+                        has successfully completed the training program
+                    </p>
+
+                    <h4 style="font-size: 32px; color: #2E86C1; margin-bottom: 10px;">
+                        <span t-field="doc.course_id.name"/>
+                    </h4>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 40px;">
+                        Course Reference: <span t-field="doc.training_code"/>
+                    </p>
+
+                    <table style="width: 80%; margin: 0 auto 40px auto;">
+                        <tr>
+                            <td style="text-align: right; padding-right: 20px; width: 50%;">
+                                <strong>Completion Date:</strong>
+                            </td>
+                            <td style="text-align: left;">
+                                <span t-esc="format_date(doc.date_completed)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding-right: 20px;">
+                                <strong>Duration:</strong>
+                            </td>
+                            <td style="text-align: left;">
+                                <span t-field="doc.course_id.estimated_duration"/> Hours
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-top: 50px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="text-align: center; width: 33%;">
+                                    <hr style="width: 80%;"/>
+                                    <p><strong>Training Manager</strong></p>
+                                </td>
+                                <td style="text-align: center; width: 33%;">
+                                    <hr style="width: 80%;"/>
+                                    <p><strong>HR Manager</strong></p>
+                                </td>
+                                <td style="text-align: center; width: 33%;">
+                                    <hr style="width: 80%;"/>
+                                    <p><strong>Employee</strong></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p style="margin-top: 40px; font-size: 12px; color: #999;">
+                        Certificate ID: <span t-field="doc.training_code"/>-CERT-<span t-esc="doc.id"/>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_payment_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="custom_training_management.report_payment_receipt_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_payment_receipt_document">
+        <t t-call="custom_training_management.custom_minimal_layout">
+            <t t-set="currency" t-value="doc.currency_id or doc.company_id.currency_id"/>
+            <div class="page">
+                <div class="row" style="border-bottom: 2px solid #28B463; margin-bottom: 20px;">
+                    <div class="col-6">
+                        <h2 style="color: #28B463;">PAYMENT RECEIPT</h2>
+                    </div>
+                    <div class="col-6 text-right">
+                        <p>
+                            <strong>Receipt No:</strong> RCP-<span t-esc="doc.id"/>
+                        </p>
+                        <p>
+                            <strong>Training Code:</strong> <span t-field="doc.attendee_id.training_code"/>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-12">
+                        <h4><span t-field="get_company().name"/></h4>
+                        <p t-field="get_company().street"/>
+                        <p t-field="get_company().city"/>
+                    </div>
+                </div>
+
+                <table class="table table-bordered" style="margin-bottom: 20px;">
+                    <tr>
+                        <th width="30%">Training Code</th>
+                        <td><span t-field="doc.attendee_id.training_code"/></td>
+                    </tr>
+                    <tr>
+                        <th width="30%">Training Course</th>
+                        <td><span t-field="doc.course_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <th>Employee</th>
+                        <td><span t-field="doc.employee_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <th>Amount Paid</th>
+                        <td>
+                            <h3>
+                                <span t-esc="format_currency(doc.amount, currency)"/>
+                            </h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Payment Method</th>
+                        <td><span t-field="doc.payment_method"/></td>
+                    </tr>
+                    <tr>
+                        <th>Payment Reference</th>
+                        <td><span t-field="doc.payment_reference"/></td>
+                    </tr>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <td><span t-field="doc.transaction_id"/></td>
+                    </tr>
+                    <tr>
+                        <th>Payment Status</th>
+                        <td><span t-field="doc.state"/></td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.notes">
+                    <h4>Notes</h4>
+                    <p class="well well-sm" t-field="doc.notes"/>
+                </t>
+
+                <p style="margin-top: 20px; font-size: 11px; color: #999; text-align: center;">
+                    This is a computer-generated receipt. No signature required.
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_company_training">
+        <t t-call="web.html_container">
+            <t t-call="custom_training_management.report_company_training_document"/>
+        </t>
+    </template>
+    <template id="report_company_training_document">
+        <t t-call="custom_training_management.custom_minimal_layout">
+            <div class="page">
+                <div class="row" style="border-bottom: 2px solid #2E86C1; margin-bottom: 20px;">
+                    <div class="col-6">
+                        <h2 style="color: #2E86C1;">
+                            <t t-if="report_type == 'summary'">Company Training Report - Summary</t>
+                            <t t-if="report_type == 'detailed'">Company Training Report - Detailed</t>
+                            <t t-if="report_type == 'department'">Company Training Report - Department-wise</t>
+                            <t t-if="report_type == 'training'">Company Training Report - Training-wise</t>
+                        </h2>
+                    </div>
+                    <div class="col-6 text-right">
+                        <p>
+                            <strong>Date Range:</strong>
+                            <span t-esc="date_from"/> to <span t-esc="date_to"/>
+                        </p>
+                        <p>
+                            <strong>Generated:</strong>
+                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%B %d, %Y %H:%M')"/>
+                        </p>
+                    </div>
+                </div>
+
+                <t t-if="not docs">
+                    <div class="alert alert-info text-center" style="margin: 50px;">
+                        <h3>No Training Data Found</h3>
+                        <p>No training assignments found for the selected date range:
+                           <span t-esc="date_from"/> to <span t-esc="date_to"/>.
+                        </p>
+                    </div>
+                </t>
+                <t t-else="">
+
+                    <div class="row" style="margin-bottom: 20px;">
+                        <div class="col-12">
+                            <h3>Executive Summary</h3>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th width="25%">Total Trainings Assigned</th>
+                                    <td width="25%"><span t-esc="stats['total']"/></td>
+                                    <th width="25%">Completion Rate</th>
+                                    <td width="25%"><span t-esc="'%.1f' % stats['completion_rate']"/>%</td>
+                                </tr>
+                                <tr>
+                                    <th>Completed</th>
+                                    <td><span t-esc="stats['completed']"/></td>
+                                    <th>In Progress</th>
+                                    <td><span t-esc="stats['in_progress']"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Not Started</th>
+                                    <td><span t-esc="stats['not_started']"/></td>
+                                    <th>Overdue</th>
+                                    <td><span t-esc="stats['overdue']"/></td>
+                                </tr>
+                                <t t-if="stats['total_fees'] > 0">
+                                    <tr>
+                                        <th>Total Fees</th>
+                                        <td><span t-esc="format_currency(stats['total_fees'])"/></td>
+                                        <th>Total Paid</th>
+                                        <td><span t-esc="format_currency(stats['total_paid'])"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Outstanding</th>
+                                        <td colspan="3"><span t-esc="format_currency(stats['total_outstanding'])"/></td>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div t-if="report_type == 'department' or report_type == 'summary'" class="row" style="margin-bottom: 20px;">
+                        <div class="col-12">
+                            <h3>Department-wise Breakdown</h3>
+                            <table class="table table-bordered table-sm">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr>
+                                        <th>Department</th>
+                                        <th>Total</th>
+                                        <th>Completed</th>
+                                        <th>In Progress</th>
+                                        <th>Not Started</th>
+                                        <th>Overdue</th>
+                                        <th>Completion %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="group_by_department(docs)" t-as="dept">
+                                        <tr>
+                                            <td><strong><t t-esc="dept"/></strong></td>
+                                            <td><t t-esc="group_by_department(docs)[dept]['total']"/></td>
+                                            <td><t t-esc="group_by_department(docs)[dept]['completed']"/></td>
+                                            <td><t t-esc="group_by_department(docs)[dept]['in_progress']"/></td>
+                                            <td><t t-esc="group_by_department(docs)[dept]['not_started']"/></td>
+                                            <td>
+                                                <t t-if="group_by_department(docs)[dept]['overdue'] > 0">
+                                                    <span style="color: red;">
+                                                        <t t-esc="group_by_department(docs)[dept]['overdue']"/>
+                                                    </span>
+                                                </t>
+                                                <t t-else="">
+                                                    0
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-esc="'%.1f' % group_by_department(docs)[dept]['completion_rate']"/>%
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div t-if="report_type == 'training' or report_type == 'summary'" class="row" style="margin-bottom: 20px;">
+                        <div class="col-12">
+                            <h3>Training-wise Breakdown</h3>
+                            <table class="table table-bordered table-sm">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr>
+                                        <th>Training</th>
+                                        <th>Total</th>
+                                        <th>Completed</th>
+                                        <th>In Progress</th>
+                                        <th>Not Started</th>
+                                        <th>Overdue</th>
+                                        <th>Completion %</th>
+                                        <th>Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="group_by_training(docs)" t-as="training">
+                                        <tr>
+                                            <td><strong><t t-esc="training"/></strong></td>
+                                            <td><t t-esc="group_by_training(docs)[training]['total']"/></td>
+                                            <td><t t-esc="group_by_training(docs)[training]['completed']"/></td>
+                                            <td><t t-esc="group_by_training(docs)[training]['in_progress']"/></td>
+                                            <td><t t-esc="group_by_training(docs)[training]['not_started']"/></td>
+                                            <td>
+                                                <t t-if="group_by_training(docs)[training]['overdue'] > 0">
+                                                    <span style="color: red;">
+                                                        <t t-esc="group_by_training(docs)[training]['overdue']"/>
+                                                    </span>
+                                                </t>
+                                                <t t-else="">
+                                                    0
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-esc="'%.1f' % group_by_training(docs)[training]['completion_rate']"/>%
+                                            </td>
+                                            <td>
+                                                <t t-if="group_by_training(docs)[training]['fee'] > 0">
+                                                    <span t-esc="format_currency(group_by_training(docs)[training]['fee'])"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div t-if="report_type == 'detailed' or report_type == 'summary'" class="row" style="margin-bottom: 20px;">
+                        <div class="col-12">
+                            <h3>Detailed Assignments</h3>
+                            <table class="table table-bordered table-sm">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Department</th>
+                                        <th>Code</th>
+                                        <th>Training</th>
+                                        <th>Start Date</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                        <th>Certificate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="docs" t-as="attendee">
+                                        <tr>
+                                            <td><span t-field="attendee.employee_id.name"/></td>
+                                            <td><span t-field="attendee.department_id.name"/></td>
+                                            <td><span t-field="attendee.training_code"/></td>
+                                            <td><span t-field="attendee.course_id.name"/></td>
+                                            <td><span t-field="attendee.date_start"/></td>
+                                            <td><span t-field="attendee.date_end"/></td>
+                                            <td>
+                                                <span t-field="attendee.state"/>
+                                                <t t-if="attendee.is_overdue">
+                                                    <span style="color: red;"> (OVERDUE)</span>
+                                                </t>
+                                            </td>
+                                            <td><span t-field="attendee.completion_percentage"/>%</td>
+                                            <td>
+                                                <t t-if="attendee.certificate_uploaded">
+                                                    <span class="badge badge-success">YES</span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="badge badge-warning">NO</span>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px;">
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+<!--    &lt;!&ndash; Custom Minimal Layout - Clean page with no header/footer &ndash;&gt;-->
+<!--    <template id="custom_minimal_layout" name="Custom Minimal Layout">-->
+<!--        <t t-name="custom_minimal_layout">-->
+<!--            <div class="page">-->
+<!--                <t t-raw="0"/>-->
+<!--            </div>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    &lt;!&ndash; Training Summary Report Template &ndash;&gt;-->
+<!--    <template id="report_training_summary">-->
+<!--        <t t-call="web.html_container">-->
+<!--            <t t-foreach="docs" t-as="doc">-->
+<!--                <t t-call="custom_training_management.report_training_summary_document"/>-->
+<!--            </t>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    <template id="report_training_summary_document">-->
+<!--        &lt;!&ndash; Use custom minimal layout &ndash;&gt;-->
+<!--        <t t-call="custom_training_management.custom_minimal_layout">-->
+<!--            <div class="page">-->
+<!--                &lt;!&ndash; Header &ndash;&gt;-->
+<!--                <div class="row" style="border-bottom: 2px solid #2E86C1; margin-bottom: 20px;">-->
+<!--                    <div class="col-6">-->
+<!--                        <h2 style="color: #2E86C1;">Training Summary Report</h2>-->
+<!--                    </div>-->
+<!--                    <div class="col-6 text-right">-->
+<!--                        <p>-->
+<!--                            <strong>Date:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%B %d, %Y')"/>-->
+<!--                        </p>-->
+<!--                        <p>-->
+<!--                            <strong>Report ID:</strong> SUM-<span t-esc="doc.id"/>-<span t-esc="datetime.datetime.now().strftime('%Y%m%d')"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Employee Details &ndash;&gt;-->
+<!--                <div class="row" style="margin-bottom: 20px;">-->
+<!--                    <div class="col-12">-->
+<!--                        <h4>Employee: <span t-field="doc.employee_id.name"/></h4>-->
+<!--                        <p>-->
+<!--                            <strong>Department:</strong> <span t-field="doc.department_id.name"/> |-->
+<!--                            <strong>Training:</strong> <span t-field="doc.course_id.name"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Training Details Table &ndash;&gt;-->
+<!--                <table class="table table-bordered" style="margin-bottom: 20px;">-->
+<!--                    <thead style="background-color: #f8f9fa;">-->
+<!--                        <tr>-->
+<!--                            <th>Training Title</th>-->
+<!--                            <th>Start Date</th>-->
+<!--                            <th>Due Date</th>-->
+<!--                            <th>Status</th>-->
+<!--                            <th>Progress</th>-->
+<!--                        </tr>-->
+<!--                    </thead>-->
+<!--                    <tbody>-->
+<!--                        <tr>-->
+<!--                            <td><span t-field="doc.course_id.name"/></td>-->
+<!--                            <td><span t-field="doc.date_start"/></td>-->
+<!--                            <td><span t-field="doc.date_end"/></td>-->
+<!--                            <td>-->
+<!--                                <span t-field="doc.state"/>-->
+<!--                                <t t-if="doc.is_overdue">-->
+<!--                                    <span class="badge badge-danger">OVERDUE</span>-->
+<!--                                </t>-->
+<!--                            </td>-->
+<!--                            <td>-->
+<!--                                <span t-field="doc.completion_percentage"/>%-->
+<!--                            </td>-->
+<!--                        </tr>-->
+<!--                    </tbody>-->
+<!--                </table>-->
+
+<!--                &lt;!&ndash; PAYMENT SECTION &ndash;&gt;-->
+<!--                <t t-if="doc.course_id.is_paid">-->
+<!--                    <h4>Payment Information</h4>-->
+<!--                    <table class="table table-bordered" style="margin-bottom: 20px;">-->
+<!--                        <thead style="background-color: #f8f9fa;">-->
+<!--                            <tr>-->
+<!--                                <th>Training Fee</th>-->
+<!--                                <th>Amount Paid</th>-->
+<!--                                <th>Outstanding</th>-->
+<!--                                <th>Payment Status</th>-->
+<!--                            </tr>-->
+<!--                        </thead>-->
+<!--                        <tbody>-->
+<!--                            <tr>-->
+<!--                                <td>-->
+<!--                                    <t t-set="currency" t-value="doc.course_id.currency_id or doc.company_id.currency_id"/>-->
+<!--                                    <span t-esc="format_currency(doc.course_id.training_fee, currency)"/>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <t t-set="paid_amount" t-value="sum(doc.payment_ids.filtered(lambda p: p.state == 'paid').mapped('amount'))"/>-->
+<!--                                    <span t-esc="format_currency(paid_amount, currency)"/>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <span t-esc="format_currency(doc.course_id.training_fee - paid_amount, currency)"/>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <span t-field="doc.payment_status"/>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                        </tbody>-->
+<!--                    </table>-->
+<!--                </t>-->
+
+<!--                &lt;!&ndash; Certificate Information &ndash;&gt;-->
+<!--                <t t-if="doc.state == 'completed'">-->
+<!--                    <h4>Certificate Information</h4>-->
+<!--                    <table class="table table-bordered" style="margin-bottom: 20px;">-->
+<!--                        <tr>-->
+<!--                            <th width="30%">Completion Date</th>-->
+<!--                            <td><span t-field="doc.date_completed"/></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                            <th>Certificate Uploaded</th>-->
+<!--                            <td>-->
+<!--                                <t t-if="doc.certificate_uploaded">-->
+<!--                                    <span class="badge badge-success">YES</span>-->
+<!--                                    <span t-field="doc.certificate_filename"/>-->
+<!--                                </t>-->
+<!--                                <t t-else="">-->
+<!--                                    <span class="badge badge-warning">NOT UPLOADED</span>-->
+<!--                                </t>-->
+<!--                            </td>-->
+<!--                        </tr>-->
+<!--                    </table>-->
+<!--                </t>-->
+
+<!--                &lt;!&ndash; Notes &ndash;&gt;-->
+<!--                <t t-if="doc.notes">-->
+<!--                    <h4>Notes/Comments</h4>-->
+<!--                    <p class="well well-sm" t-field="doc.notes"/>-->
+<!--                </t>-->
+
+<!--                &lt;!&ndash; Footer &ndash;&gt;-->
+<!--                <div class="row" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px;">-->
+
+<!--                </div>-->
+<!--            </div>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    &lt;!&ndash; Training Certificate Template &ndash;&gt;-->
+<!--    <template id="report_training_certificate">-->
+<!--        <t t-call="web.html_container">-->
+<!--            <t t-foreach="docs" t-as="doc">-->
+<!--                <t t-call="custom_training_management.report_training_certificate_document"/>-->
+<!--            </t>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    <template id="report_training_certificate_document">-->
+<!--        &lt;!&ndash; Use custom minimal layout &ndash;&gt;-->
+<!--        <t t-call="custom_training_management.custom_minimal_layout">-->
+<!--            <div class="page" style="text-align: center;">-->
+<!--                &lt;!&ndash; Certificate Border &ndash;&gt;-->
+<!--                <div style="border: 10px solid #2E86C1; padding: 40px; margin: 20px; border-radius: 20px;">-->
+
+<!--                    &lt;!&ndash; Company Name &ndash;&gt;-->
+<!--                    <h1 style="color: #2E86C1; font-size: 48px; margin-bottom: 10px;">-->
+<!--                        <span t-field="get_company().name"/>-->
+<!--                    </h1>-->
+
+<!--                    <h2 style="color: #555; font-size: 36px; margin-bottom: 30px;">-->
+<!--                        Certificate of Completion-->
+<!--                    </h2>-->
+
+<!--                    <p style="font-size: 18px; margin-bottom: 40px;">-->
+<!--                        This is to certify that-->
+<!--                    </p>-->
+
+<!--                    <h3 style="font-size: 42px; font-weight: bold; margin-bottom: 30px;">-->
+<!--                        <span t-field="doc.employee_id.name"/>-->
+<!--                    </h3>-->
+
+<!--                    <p style="font-size: 18px; margin-bottom: 20px;">-->
+<!--                        has successfully completed the training program-->
+<!--                    </p>-->
+
+<!--                    <h4 style="font-size: 32px; color: #2E86C1; margin-bottom: 40px;">-->
+<!--                        <span t-field="doc.course_id.name"/>-->
+<!--                    </h4>-->
+
+<!--                    <table style="width: 80%; margin: 0 auto 40px auto;">-->
+<!--                        <tr>-->
+<!--                            <td style="text-align: right; padding-right: 20px; width: 50%;">-->
+<!--                                <strong>Completion Date:</strong>-->
+<!--                            </td>-->
+<!--                            <td style="text-align: left;">-->
+<!--                                <span t-esc="format_date(doc.date_completed)"/>-->
+<!--                            </td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                            <td style="text-align: right; padding-right: 20px;">-->
+<!--                                <strong>Duration:</strong>-->
+<!--                            </td>-->
+<!--                            <td style="text-align: left;">-->
+<!--                                <span t-field="doc.course_id.estimated_duration"/> Hours-->
+<!--                            </td>-->
+<!--                        </tr>-->
+<!--                    </table>-->
+
+<!--                    &lt;!&ndash; Signatures &ndash;&gt;-->
+<!--                    <div style="margin-top: 50px;">-->
+<!--                        <table style="width: 100%;">-->
+<!--                            <tr>-->
+<!--                                <td style="text-align: center; width: 33%;">-->
+<!--                                    <hr style="width: 80%;"/>-->
+<!--                                    <p><strong>Training Manager</strong></p>-->
+<!--                                </td>-->
+<!--                                <td style="text-align: center; width: 33%;">-->
+<!--                                    <hr style="width: 80%;"/>-->
+<!--                                    <p><strong>HR Manager</strong></p>-->
+<!--                                </td>-->
+<!--                                <td style="text-align: center; width: 33%;">-->
+<!--                                    <hr style="width: 80%;"/>-->
+<!--                                    <p><strong>Employee</strong></p>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                        </table>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; Certificate ID &ndash;&gt;-->
+<!--                    <p style="margin-top: 40px; font-size: 12px; color: #999;">-->
+<!--                        Certificate ID: CERT-<span t-esc="doc.id"/>-<span t-esc="doc.date_completed.strftime('%Y%m')"/>-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    &lt;!&ndash; Payment Receipt Template &ndash;&gt;-->
+<!--    <template id="report_payment_receipt">-->
+<!--        <t t-call="web.html_container">-->
+<!--            <t t-foreach="docs" t-as="doc">-->
+<!--                <t t-call="custom_training_management.report_payment_receipt_document"/>-->
+<!--            </t>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    <template id="report_payment_receipt_document">-->
+<!--        &lt;!&ndash; Use custom minimal layout &ndash;&gt;-->
+<!--        <t t-call="custom_training_management.custom_minimal_layout">-->
+<!--            <t t-set="currency" t-value="doc.currency_id or doc.company_id.currency_id"/>-->
+<!--            <div class="page">-->
+<!--                &lt;!&ndash; Header &ndash;&gt;-->
+<!--                <div class="row" style="border-bottom: 2px solid #28B463; margin-bottom: 20px;">-->
+<!--                    <div class="col-6">-->
+<!--                        <h2 style="color: #28B463;">PAYMENT RECEIPT</h2>-->
+<!--                    </div>-->
+<!--                    <div class="col-6 text-right">-->
+<!--                        <p>-->
+<!--                            <strong>Receipt No:</strong> RCP-<span t-esc="doc.id"/>-<span t-esc="doc.payment_date.strftime('%Y%m%d')"/>-->
+<!--                        </p>-->
+<!--                        <p>-->
+<!--                            <strong>Date:</strong> <span t-field="doc.payment_date"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Company Details &ndash;&gt;-->
+<!--                <div class="row" style="margin-bottom: 20px;">-->
+<!--                    <div class="col-12">-->
+<!--                        <h4><span t-field="get_company().name"/></h4>-->
+<!--                        <p t-field="get_company().street"/>-->
+<!--                        <p t-field="get_company().city"/>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Payment Details &ndash;&gt;-->
+<!--                <table class="table table-bordered" style="margin-bottom: 20px;">-->
+<!--                    <tr>-->
+<!--                        <th width="30%">Training Course</th>-->
+<!--                        <td><span t-field="doc.course_id.name"/></td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <th>Employee</th>-->
+<!--                        <td><span t-field="doc.employee_id.name"/></td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <th>Amount Paid</th>-->
+<!--                        <td>-->
+<!--                            <h3>-->
+<!--                                <span t-esc="format_currency(doc.amount, currency)"/>-->
+<!--                            </h3>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <th>Payment Method</th>-->
+<!--                        <td><span t-field="doc.payment_method"/></td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <th>Payment Reference</th>-->
+<!--                        <td><span t-field="doc.payment_reference"/></td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <th>Transaction ID</th>-->
+<!--                        <td><span t-field="doc.transaction_id"/></td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <th>Payment Status</th>-->
+<!--                        <td><span t-field="doc.state"/></td>-->
+<!--                    </tr>-->
+<!--                </table>-->
+
+<!--                &lt;!&ndash; Notes &ndash;&gt;-->
+<!--                <t t-if="doc.notes">-->
+<!--                    <h4>Notes</h4>-->
+<!--                    <p class="well well-sm" t-field="doc.notes"/>-->
+<!--                </t>-->
+
+<!--                &lt;!&ndash; Footer &ndash;&gt;-->
+<!--&lt;!&ndash;                <div class="row" style="margin-top: 30px;">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <div class="col-6">&ndash;&gt;-->
+<!--&lt;!&ndash;                        <p><strong>Received by:</strong> _________________________</p>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <div class="col-6 text-right">&ndash;&gt;-->
+<!--&lt;!&ndash;                        <p><strong>Authorized Signature:</strong> _________________________</p>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                </div>&ndash;&gt;-->
+
+<!--                <p style="margin-top: 20px; font-size: 11px; color: #999; text-align: center;">-->
+<!--                    This is a computer-generated receipt. No signature required.-->
+<!--                </p>-->
+<!--            </div>-->
+<!--        </t>-->
+<!--    </template>-->
+
+<!--    &lt;!&ndash; Company Training Report Template &ndash;&gt;-->
+<!--    <template id="report_company_training">-->
+<!--        <t t-call="web.html_container">-->
+<!--            <t t-call="custom_training_management.report_company_training_document"/>-->
+<!--        </t>-->
+<!--    </template>-->
+<!--    <template id="report_company_training_document">-->
+<!--        &lt;!&ndash; Use custom minimal layout &ndash;&gt;-->
+<!--        <t t-call="custom_training_management.custom_minimal_layout">-->
+<!--            <div class="page">-->
+<!--                &lt;!&ndash; Header &ndash;&gt;-->
+<!--                <div class="row" style="border-bottom: 2px solid #2E86C1; margin-bottom: 20px;">-->
+<!--                    <div class="col-6">-->
+<!--                        <h2 style="color: #2E86C1;">-->
+<!--                            <t t-if="report_type == 'summary'">Company Training Report - Summary</t>-->
+<!--                            <t t-if="report_type == 'detailed'">Company Training Report - Detailed</t>-->
+<!--                            <t t-if="report_type == 'department'">Company Training Report - Department-wise</t>-->
+<!--                            <t t-if="report_type == 'training'">Company Training Report - Training-wise</t>-->
+<!--                        </h2>-->
+<!--                    </div>-->
+<!--                    <div class="col-6 text-right">-->
+<!--                        <p>-->
+<!--                            <strong>Date Range:</strong>-->
+<!--                            <span t-esc="date_from"/> to <span t-esc="date_to"/>-->
+<!--                        </p>-->
+<!--                        <p>-->
+<!--                            <strong>Generated:</strong>-->
+<!--                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%B %d, %Y %H:%M')"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Show message if no data &ndash;&gt;-->
+<!--                <t t-if="not docs">-->
+<!--                    <div class="alert alert-info text-center" style="margin: 50px;">-->
+<!--                        <h3>No Training Data Found</h3>-->
+<!--                        <p>No training assignments found for the selected date range:-->
+<!--                           <span t-esc="date_from"/> to <span t-esc="date_to"/>.-->
+<!--                        </p>-->
+<!--                    </div>-->
+<!--                </t>-->
+<!--                <t t-else="">-->
+
+<!--                    &lt;!&ndash; ===== EXECUTIVE SUMMARY - SHOW FOR ALL REPORT TYPES ===== &ndash;&gt;-->
+<!--                    <div class="row" style="margin-bottom: 20px;">-->
+<!--                        <div class="col-12">-->
+<!--                            <h3>Executive Summary</h3>-->
+<!--                            <table class="table table-bordered">-->
+<!--                                <tr>-->
+<!--                                    <th width="25%">Total Trainings Assigned</th>-->
+<!--                                    <td width="25%"><span t-esc="stats['total']"/></td>-->
+<!--                                    <th width="25%">Completion Rate</th>-->
+<!--                                    <td width="25%"><span t-esc="'%.1f' % stats['completion_rate']"/>%</td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <th>Completed</th>-->
+<!--                                    <td><span t-esc="stats['completed']"/></td>-->
+<!--                                    <th>In Progress</th>-->
+<!--                                    <td><span t-esc="stats['in_progress']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <th>Not Started</th>-->
+<!--                                    <td><span t-esc="stats['not_started']"/></td>-->
+<!--                                    <th>Overdue</th>-->
+<!--                                    <td><span t-esc="stats['overdue']"/></td>-->
+<!--                                </tr>-->
+<!--                                <t t-if="stats['total_fees'] > 0">-->
+<!--                                    <tr>-->
+<!--                                        <th>Total Fees</th>-->
+<!--                                        <td><span t-esc="format_currency(stats['total_fees'])"/></td>-->
+<!--                                        <th>Total Paid</th>-->
+<!--                                        <td><span t-esc="format_currency(stats['total_paid'])"/></td>-->
+<!--                                    </tr>-->
+<!--                                    <tr>-->
+<!--                                        <th>Outstanding</th>-->
+<!--                                        <td colspan="3"><span t-esc="format_currency(stats['total_outstanding'])"/></td>-->
+<!--                                    </tr>-->
+<!--                                </t>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; ===== DEPARTMENT-WISE BREAKDOWN - Show only for 'department' or 'summary' ===== &ndash;&gt;-->
+<!--                    <div t-if="report_type == 'department' or report_type == 'summary'" class="row" style="margin-bottom: 20px;">-->
+<!--                        <div class="col-12">-->
+<!--                            <h3>Department-wise Breakdown</h3>-->
+<!--                            <table class="table table-bordered table-sm">-->
+<!--                                <thead style="background-color: #f8f9fa;">-->
+<!--                                    <tr>-->
+<!--                                        <th>Department</th>-->
+<!--                                        <th>Total</th>-->
+<!--                                        <th>Completed</th>-->
+<!--                                        <th>In Progress</th>-->
+<!--                                        <th>Not Started</th>-->
+<!--                                        <th>Overdue</th>-->
+<!--                                        <th>Completion %</th>-->
+<!--                                    </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody>-->
+<!--                                    <t t-foreach="group_by_department(docs)" t-as="dept">-->
+<!--                                        <tr>-->
+<!--                                            <td><strong><t t-esc="dept"/></strong></td>-->
+<!--                                            <td><t t-esc="group_by_department(docs)[dept]['total']"/></td>-->
+<!--                                            <td><t t-esc="group_by_department(docs)[dept]['completed']"/></td>-->
+<!--                                            <td><t t-esc="group_by_department(docs)[dept]['in_progress']"/></td>-->
+<!--                                            <td><t t-esc="group_by_department(docs)[dept]['not_started']"/></td>-->
+<!--                                            <td>-->
+<!--                                                <t t-if="group_by_department(docs)[dept]['overdue'] > 0">-->
+<!--                                                    <span style="color: red;">-->
+<!--                                                        <t t-esc="group_by_department(docs)[dept]['overdue']"/>-->
+<!--                                                    </span>-->
+<!--                                                </t>-->
+<!--                                                <t t-else="">-->
+<!--                                                    0-->
+<!--                                                </t>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="'%.1f' % group_by_department(docs)[dept]['completion_rate']"/>%-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
+<!--                                    </t>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; ===== TRAINING-WISE BREAKDOWN - Show only for 'training' or 'summary' ===== &ndash;&gt;-->
+<!--                    <div t-if="report_type == 'training' or report_type == 'summary'" class="row" style="margin-bottom: 20px;">-->
+<!--                        <div class="col-12">-->
+<!--                            <h3>Training-wise Breakdown</h3>-->
+<!--                            <table class="table table-bordered table-sm">-->
+<!--                                <thead style="background-color: #f8f9fa;">-->
+<!--                                    <tr>-->
+<!--                                        <th>Training</th>-->
+<!--                                        <th>Total</th>-->
+<!--                                        <th>Completed</th>-->
+<!--                                        <th>In Progress</th>-->
+<!--                                        <th>Not Started</th>-->
+<!--                                        <th>Overdue</th>-->
+<!--                                        <th>Completion %</th>-->
+<!--                                        <th>Fee</th>-->
+<!--                                    </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody>-->
+<!--                                    <t t-foreach="group_by_training(docs)" t-as="training">-->
+<!--                                        <tr>-->
+<!--                                            <td><strong><t t-esc="training"/></strong></td>-->
+<!--                                            <td><t t-esc="group_by_training(docs)[training]['total']"/></td>-->
+<!--                                            <td><t t-esc="group_by_training(docs)[training]['completed']"/></td>-->
+<!--                                            <td><t t-esc="group_by_training(docs)[training]['in_progress']"/></td>-->
+<!--                                            <td><t t-esc="group_by_training(docs)[training]['not_started']"/></td>-->
+<!--                                            <td>-->
+<!--                                                <t t-if="group_by_training(docs)[training]['overdue'] > 0">-->
+<!--                                                    <span style="color: red;">-->
+<!--                                                        <t t-esc="group_by_training(docs)[training]['overdue']"/>-->
+<!--                                                    </span>-->
+<!--                                                </t>-->
+<!--                                                <t t-else="">-->
+<!--                                                    0-->
+<!--                                                </t>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="'%.1f' % group_by_training(docs)[training]['completion_rate']"/>%-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-if="group_by_training(docs)[training]['fee'] > 0">-->
+<!--                                                    <span t-esc="format_currency(group_by_training(docs)[training]['fee'])"/>-->
+<!--                                                </t>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
+<!--                                    </t>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; ===== DETAILED LIST - Show only for 'detailed' or 'summary' ===== &ndash;&gt;-->
+<!--                    <div t-if="report_type == 'detailed' or report_type == 'summary'" class="row" style="margin-bottom: 20px;">-->
+<!--                        <div class="col-12">-->
+<!--                            <h3>Detailed Assignments</h3>-->
+<!--                            <table class="table table-bordered table-sm">-->
+<!--                                <thead style="background-color: #f8f9fa;">-->
+<!--                                    <tr>-->
+<!--                                        <th>Employee</th>-->
+<!--                                        <th>Department</th>-->
+<!--                                        <th>Training</th>-->
+<!--                                        <th>Start Date</th>-->
+<!--                                        <th>Due Date</th>-->
+<!--                                        <th>Status</th>-->
+<!--                                        <th>Progress</th>-->
+<!--                                        <th>Certificate</th>-->
+<!--                                    </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody>-->
+<!--                                    <t t-foreach="docs" t-as="attendee">-->
+<!--                                        <tr>-->
+<!--                                            <td><span t-field="attendee.employee_id.name"/></td>-->
+<!--                                            <td><span t-field="attendee.department_id.name"/></td>-->
+<!--                                            <td><span t-field="attendee.course_id.name"/></td>-->
+<!--                                            <td><span t-field="attendee.date_start"/></td>-->
+<!--                                            <td><span t-field="attendee.date_end"/></td>-->
+<!--                                            <td>-->
+<!--                                                <span t-field="attendee.state"/>-->
+<!--                                                <t t-if="attendee.is_overdue">-->
+<!--                                                    <span style="color: red;"> (OVERDUE)</span>-->
+<!--                                                </t>-->
+<!--                                            </td>-->
+<!--                                            <td><span t-field="attendee.completion_percentage"/>%</td>-->
+<!--                                            &lt;!&ndash; Certificate Information - In the Training Summary Report &ndash;&gt;-->
+<!--                                            <td>-->
+<!--                                                <t t-if="doc.certificate_uploaded">-->
+<!--                                                    <span class="badge badge-success">YES</span>-->
+<!--                                                    <span t-field="doc.certificate_filename"/>-->
+<!--                                                </t>-->
+<!--                                                <t t-else="">-->
+<!--                                                    <span class="badge badge-warning">NOT UPLOADED</span>-->
+<!--                                                </t>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
+<!--                                    </t>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; Footer &ndash;&gt;-->
+<!--                    <div class="row" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px;">-->
+<!--                    </div>-->
+<!--                </t>-->
+<!--            </div>-->
+<!--        </t>-->
+<!--    </template>-->
+</odoo>

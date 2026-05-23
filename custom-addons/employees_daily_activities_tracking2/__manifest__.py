@@ -1,0 +1,21 @@
+{
+    'name': 'Employees Daily Activities Tracking2',
+    'version': '16.0.1.0.0',
+    'summary': 'Track daily activities of technical and non-technical employees',
+    'category': 'Human Resources',
+    'author': 'LOUS BETA',
+    'depends': ['hr', 'mail',  'calendar', 'helpdesk', 'crm', 'project', 'custom_training_management'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'views/hr_department_views.xml',
+        'views/daily_activity_calendar.xml',
+        'views/daily_activity_views.xml',
+        'views/menu.xml',
+        'views/daily_activity_reports.xml',
+        'views/overtime.xml',
+        'views/configurations.xml',
+    ],
+    'installable': True,
+    'application': True,
+}

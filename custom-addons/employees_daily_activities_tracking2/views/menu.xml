@@ -1,0 +1,15 @@
+<odoo>
+    <menuitem id="menu_daily_activity_root"
+              name="Employee Daily Activities Tracker"
+              sequence="10"/>
+
+    <record id="action_daily_activity" model="ir.actions.act_window">
+        <field name="name">Daily Activities</field>
+        <field name="res_model">employee.daily.activity</field>
+        <field name="view_mode">tree,form,calendar,pivot</field>
+    </record>
+
+    <menuitem id="menu_daily_activity"
+              parent="menu_daily_activity_root"
+              action="action_daily_activity"/>
+</odoo>

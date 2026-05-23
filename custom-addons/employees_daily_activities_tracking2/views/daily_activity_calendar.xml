@@ -1,0 +1,16 @@
+<odoo>
+    <record id="view_daily_activity_calendar" model="ir.ui.view">
+        <field name="name">employee.daily.activity.calendar</field>
+        <field name="model">employee.daily.activity</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Daily Activities Planner"
+                date_start="start_datetime"
+                date_stop="end_datetime"
+                color="employee_id">
+                <field name="name"/>
+                <field name="employee_id"/>
+            </calendar>
+        </field>
+    </record>
+</odoo>

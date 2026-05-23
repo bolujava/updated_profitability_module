@@ -1,0 +1,42 @@
+<odoo>
+    <record id="view_department_form_activity_type" model="ir.ui.view">
+        <field name="name">hr.department.form.activity.type</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="inside">
+                
+                    <field name="is_technical"/>
+                    <field name="is_non_technical"/>
+              
+            </xpath>
+        </field>
+
+    </record>
+
+    <record id="view_department_form_inherit_team_lead" model="ir.ui.view">
+        <field name="name">hr.department.form.team.lead</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+            <field name="manager_id" position="after">
+                <field name="team_lead_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_form_activity_type" model="ir.ui.view">
+        <field name="name">hr.employee.form.activity.type</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="team_lead_id"/>
+            </xpath>
+        </field>
+    </record>
+
+
+
+
+</odoo>

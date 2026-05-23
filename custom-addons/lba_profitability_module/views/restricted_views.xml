@@ -1,0 +1,39 @@
+<odoo>
+    <data>
+        <record id="view_project_form_sales_restricted" model="ir.ui.view">
+            <field name="name">project.project.form.sales.restricted</field>
+            <field name="model">project.project</field>
+            <field name="priority" eval="100"/>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//page[@name='settings']" position="attributes">
+                        <attribute name="groups">lba_profitability_module.group_project_full_access</attribute>
+                    </xpath>
+
+                    <xpath expr="//page[@name='profitability']" position="attributes">
+                        <attribute name="groups">lba_profitability_module.group_project_full_access</attribute>
+                    </xpath>
+
+                    <xpath expr="//notebook/page[last()]" position="attributes">
+                        <attribute name="groups">lba_profitability_module.group_project_full_access</attribute>
+                    </xpath>
+
+                    <xpath expr="//button[@name='accept_team_lead']" position="attributes">
+                        <attribute name="groups">lba_profitability_module.group_project_full_access</attribute>
+                    </xpath>
+                    <xpath expr="//button[@name='accept_project_manager']" position="attributes">
+                        <attribute name="groups">lba_profitability_module.group_project_full_access</attribute>
+                    </xpath>
+                    <xpath expr="//button[@name='accept_department_manager']" position="attributes">
+                        <attribute name="groups">lba_profitability_module.group_project_full_access</attribute>
+                    </xpath>
+
+                    <xpath expr="//field[@name='name']" position="attributes">
+                        <attribute name="attrs">{'readonly': [('id', '!=', False)]}</attribute> </xpath>
+
+                </data>
+            </field>
+        </record>
+    </data>
+</odoo>

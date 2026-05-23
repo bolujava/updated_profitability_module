@@ -1,0 +1,49 @@
+<odoo>
+    <record id="view_activity_type_tree" model="ir.ui.view">
+        <field name="name">activity.type.tree</field>
+        <field name="model">activity.type</field>
+        <field name="arch" type="xml">
+            <tree string="Activity Types">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_activity_type_form" model="ir.ui.view">
+        <field name="name">activity.type.form</field>
+        <field name="model">activity.type</field>
+        <field name="arch" type="xml">
+            <form string="Activity Type">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="res_model"/>
+                        <field name="department_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_activity_type" model="ir.actions.act_window">
+        <field name="name">Activity Types</field>
+        <field name="res_model">activity.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_daily_activity_configuration_root"
+        name="Configuration"
+        parent="menu_daily_activity_root"
+        sequence="90"
+        groups="group_daily_activity_admin"/>
+
+    <menuitem
+        id="menu_activity_type"
+        name="Activity Types"
+        parent="menu_daily_activity_configuration_root"
+        action="action_activity_type"
+        sequence="10"
+        groups="group_daily_activity_admin"/>
+</odoo>

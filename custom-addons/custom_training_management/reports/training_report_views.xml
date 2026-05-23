@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Training Summary Report Action -->
+    <record id="action_report_training_summary" model="ir.actions.report">
+        <field name="name">Training Summary Report</field>
+        <field name="model">training.attendee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_training_management.report_training_summary</field>
+        <field name="report_file">custom_training_management.report_training_summary</field>
+        <field name="binding_model_id" ref="model_training_attendee"/>
+        <field name="binding_type">report</field>
+        <!-- Use standard paper format that exists in all Odoo versions -->
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Training_Summary_%s' % (object.employee_id.name)</field>
+    </record>
+
+    <!-- Training Certificate Report Action -->
+    <record id="action_report_training_certificate" model="ir.actions.report">
+        <field name="name">Training Certificate</field>
+        <field name="model">training.attendee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_training_management.report_training_certificate</field>
+        <field name="report_file">custom_training_management.report_training_certificate</field>
+        <field name="binding_model_id" ref="model_training_attendee"/>
+        <field name="binding_type">report</field>
+        <!-- Use paperformat_euro instead of paperformat_a4 (more universally available) -->
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Certificate_%s_%s' % (object.employee_id.name, object.course_id.name)</field>
+    </record>
+
+    <!-- Payment Receipt Report Action -->
+    <record id="action_report_payment_receipt" model="ir.actions.report">
+        <field name="name">Payment Receipt</field>
+        <field name="model">training.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_training_management.report_payment_receipt</field>
+        <field name="report_file">custom_training_management.report_payment_receipt</field>
+        <field name="binding_model_id" ref="model_training_payment"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Receipt_%s_%s' % (object.course_id.name, object.payment_date)</field>
+    </record>
+
+    <!-- Add Print Button to Attendee Form -->
+    <record id="view_training_attendee_form_inherit_report" model="ir.ui.view">
+        <field name="name">training.attendee.form.inherit.report</field>
+        <field name="model">training.attendee</field>
+        <field name="inherit_id" ref="view_training_attendee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_report_training_summary)d"
+                        type="action"
+                        string="Print Summary"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+                <button name="%(action_report_training_certificate)d"
+                        type="action"
+                        string="Certificate"
+                        class="btn-success"
+                        icon="fa-certificate"
+                        attrs="{'invisible': [('state', '!=', 'completed')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add Print Button to Payment Form -->
+    <record id="view_training_payment_form_inherit_report" model="ir.ui.view">
+        <field name="name">training.payment.form.inherit.report</field>
+        <field name="model">training.payment</field>
+        <field name="inherit_id" ref="view_training_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_report_payment_receipt)d"
+                        type="action"
+                        string="Print Receipt"
+                        class="btn-primary"
+                        icon="fa-receipt"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Also add print button to Course form for convenience -->
+    <record id="view_training_course_form_inherit_report" model="ir.ui.view">
+        <field name="name">training.course.form.inherit.report</field>
+        <field name="model">training.course</field>
+        <field name="inherit_id" ref="view_training_course_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_report_training_summary)d"
+                        type="action"
+                        string="Print All Summaries"
+                        class="btn-secondary"
+                        icon="fa-print"
+                        context="{'active_ids': attendee_ids, 'active_model': 'training.attendee'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

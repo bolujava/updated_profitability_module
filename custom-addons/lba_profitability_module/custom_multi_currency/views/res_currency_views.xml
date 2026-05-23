@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="currency_usd" model="res.currency">
+        <field name="name">USD - US Dollar</field>
+        <field name="symbol">USD</field>
+        <field name="rate">1.0</field>
+        <field name="is_additional_currency">1</field>
+    </record>
+</odoo>

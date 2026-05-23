@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_training_report_wizard_form" model="ir.ui.view">
+        <field name="name">company.training.report.wizard.form</field>
+        <field name="model">company.training.report.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="report_type" widget="radio"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_report"
+                            type="object"
+                            string="Generate Report"
+                            class="btn-primary"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_company_training_report_wizard" model="ir.actions.act_window">
+        <field name="name">Company Training Report</field>
+        <field name="res_model">company.training.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Company Training Report Action -->
+    <record id="action_report_company_training" model="ir.actions.report">
+        <field name="name">Company Training Report</field>
+        <field name="model">company.training.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_training_management.report_company_training</field>
+        <field name="report_file">custom_training_management.report_company_training</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Company_Training_Report_%s' % (time.strftime("%Y%m%d"))</field>
+    </record>
+</odoo>

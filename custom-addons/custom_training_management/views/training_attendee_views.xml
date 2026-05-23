@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View - Manager/Admin View -->
+    <record id="view_training_attendee_tree" model="ir.ui.view">
+        <field name="name">training.attendee.tree</field>
+        <field name="model">training.attendee</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="course_id"/>
+                <field name="training_code" string="Training Code"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'completed'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-danger="state == 'not_started'"/>
+                <field name="completion_percentage" widget="progressbar"/>
+                <field name="is_overdue" invisible="1"/>
+                <field name="certificate_uploaded"/>
+                <field name="priority" widget="priority"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_training_attendee_form" model="ir.ui.view">
+        <field name="name">training.attendee.form</field>
+        <field name="model">training.attendee</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start_training" type="object" string="Start Training" class="btn-primary" states="not_started"/>
+                    <button name="action_mark_completed" type="object" string="Mark as Completed" class="btn-success" states="in_progress"/>
+                    <button name="action_reset_to_not_started" type="object" string="Reset" states="in_progress,completed"/>
+                    <field name="state" widget="statusbar" statusbar_visible="not_started,in_progress,completed"/>
+                </header>
+
+                <sheet>
+                    <field name="certificate_uploaded" invisible="1"/>
+                    <field name="overdue_days" invisible="1"/>
+                    <field name="is_overdue" invisible="1"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="course_id" readonly="1" force_save="1"/>
+                            <field name="training_code" string="Training Code" readonly="1" force_save="1"/>
+
+                        </h1>
+                        <h3>
+                            Assigned to:
+                            <field name="employee_id"
+                                   groups="custom_training_management.group_training_manager,custom_training_management.group_training_admin"/>
+                            <field name="employee_id" readonly="1"
+                                   groups="!custom_training_management.group_training_manager,!custom_training_management.group_training_admin"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="date_start" readonly="1"/>
+                            <field name="date_end" readonly="1"/>
+                            <field name="assigned_by" readonly="1"/>
+                        </group>
+
+                        <group>
+                            <field name="priority" widget="priority"/>
+                            <field name="assignment_type" groups="custom_training_management.group_training_admin" readonly="1"/>
+                            <field name="is_overdue" attrs="{'invisible': [('is_overdue', '=', False)]}" class="text-danger" readonly="1"/>
+                            <field name="overdue_days" attrs="{'invisible': [('overdue_days', '=', 0)]}" class="text-danger" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Training Details">
+                            <field name="course_description" readonly="1" widget="html"/>
+                        </page>
+<!--                        <page string="Progress">-->
+<!--                            <group>-->
+<!--                                <field name="completion_percentage" widget="progressbar"/>-->
+<!--                                <field name="notes" placeholder="Add your comments..."/>-->
+<!--                                <field name="date_completed" readonly="1"/>-->
+<!--                            </group>-->
+<!--                        </page>-->
+<!--                        <page string="Progress">-->
+<!--                            <group>-->
+<!--                                &lt;!&ndash; Progress Bar Display &ndash;&gt;-->
+<!--                                <group>-->
+<!--                                    <label for="completion_percentage" string="Current Progress"/>-->
+<!--                                    <div class="o_row">-->
+<!--                                        &lt;!&ndash; FIXED: Removed extra span/dash, now shows clean percentage &ndash;&gt;-->
+<!--                                        <field name="completion_percentage"-->
+<!--                                               widget="progressbar"-->
+<!--                                               readonly="1"-->
+<!--                                               class="oe_inline"/>-->
+<!--                                        <span class="o_percentage_value">-->
+<!--                                            <t t-esc="completion_percentage"/>%-->
+<!--                                        </span>-->
+<!--                                    </div>-->
+<!--                                </group>-->
+
+<!--                                &lt;!&ndash; Manual Input Field with better spacing &ndash;&gt;-->
+<!--                                <group>-->
+<!--                                    <label for="completion_percentage" string="Type your Progress"/>-->
+<!--                                    <div class="o_row">-->
+<!--                                        <field name="completion_percentage"-->
+<!--                                               class="o_input_number"-->
+<!--                                               placeholder="Enter 0-100"-->
+<!--                                               style="width: 80px;"/>-->
+<!--                                        <span>%</span>-->
+<!--                                        <button name="action_apply_progress"-->
+<!--                                                type="object"-->
+<!--                                                string="Apply"-->
+<!--                                                class="btn-primary btn-sm"/>-->
+<!--                                    </div>-->
+<!--                                    <div class="text-muted small">-->
+<!--                                        <i class="fa fa-info-circle"/> Type any number (0-100) and click Apply-->
+<!--                                    </div>-->
+<!--                                </group>-->
+
+<!--                                &lt;!&ndash; Notes and Completion Date &ndash;&gt;-->
+<!--                                <field name="notes" placeholder="Add your comments..."/>-->
+<!--                                <field name="date_completed" readonly="1"/>-->
+<!--                            </group>-->
+<!--                        </page>-->
+                        <page string="Progress">
+                            <group>
+                                <group>
+                                    <label for="completion_percentage" string="Current Progress"/>
+                                    <div class="o_row">
+                                        <field name="completion_percentage" widget="progressbar" readonly="1" class="oe_inline"/>
+                                    </div>
+
+                                    <label for="completion_percentage" string="Update Progress"/>
+                                    <div class="o_row">
+                                        <field name="completion_percentage"
+                                               class="oe_inline"
+                                               placeholder="0-100"
+                                               style="width: 60px !important;"/>
+                                        <span class="oe_grey">%</span>
+                                        <button name="action_apply_progress"
+                                                type="object"
+                                                string="Apply"
+                                                class="btn-primary btn-sm ms-2"/>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        <i class="fa fa-info-circle"/> Enter 0-100 and click Apply
+                                    </div>
+                                </group>
+
+                                <group>
+                                    <field name="date_completed" readonly="1"/>
+                                    <field name="notes" placeholder="Add your comments..." nolabel="1" colspan="2"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Certificate" name="certificate_page">
+                            <group attrs="{'invisible': [('state', '!=', 'completed')]}">
+                                <field name="certificate_file" filename="certificate_filename" widget="binary"/>
+                                <field name="certificate_filename" invisible="1"/>
+                                <button name="action_download_certificate" string="Download Certificate" type="object" icon="fa-download" class="btn-primary" attrs="{'invisible': [('certificate_file', '=', False)]}"/>
+                            </group>
+
+                            <div class="alert alert-info" role="alert" attrs="{'invisible': [('state', '=', 'completed')]}">
+                                <i class="fa fa-info-circle"/> Certificate can only be uploaded after training is marked as Completed.
+                            </div>
+
+                            <group attrs="{'invisible': [('certificate_uploaded', '=', False)]}">
+                                <field name="certificate_filename" string="Verified Certificate" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="view_employee_training_dashboard" model="ir.ui.view">
+        <field name="name">employee.training.dashboard</field>
+        <field name="model">training.attendee</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" create="false" sample="1">
+                <field name="course_id"/>
+                <field name="state"/>
+                <field name="date_end"/>
+                <field name="completion_percentage"/>
+                <field name="is_overdue"/>
+                <field name="priority"/>
+                <field name="employee_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click p-0 o_kanban_record_has_image_fill shadow-sm border-0">
+                            <div t-attf-class="bg-#{record.is_overdue.raw_value ? 'danger' : (record.state.raw_value == 'completed' ? 'success' : 'primary')} position-absolute h-100" style="width: 4px; left: 0; top: 0;"/>
+
+                            <div class="oe_kanban_details p-3">
+                                <div class="o_kanban_record_top mb-1">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title text-primary" style="font-size: 1.15rem;">
+                                            <field name="course_id"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_dropdown_kanban dropdown">
+                                        <a class="dropdown-toggle o-no-caret btn" role="button" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                            <span class="fa fa-ellipsis-v"/>
+                                        </a>
+                                        <div class="dropdown-menu" role="menu">
+                                            <a role="menuitem" type="edit" class="dropdown-item">Edit</a>
+                                            <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <field name="state" widget="label_selection" options="{'classes': {'not_started': 'secondary', 'in_progress': 'warning', 'completed': 'success'}}"/>
+                                </div>
+
+                                <div class="o_kanban_record_body text-muted small">
+                                    <div t-attf-class="#{record.is_overdue.raw_value ? 'text-danger fw-bold' : ''}">
+                                        <i class="fa fa-clock-o mr-1"/>
+                                        <span>Deadline: </span>
+                                        <field name="date_end"/>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small font-weight-bold">Completion</span>
+                                        <span class="small"><t t-esc="record.completion_percentage.raw_value"/>%</span>
+                                    </div>
+                                    <field name="completion_percentage" widget="progressbar"/>
+                                </div>
+
+                                <div class="o_kanban_record_bottom mt-3 d-flex justify-content-between align-items-center">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="priority" widget="priority"/>
+                                        <t t-if="record.is_overdue.raw_value">
+                                            <span class="badge badge-pill badge-danger ml-2 animate-pulse">
+                                                <i class="fa fa-exclamation-triangle"/> OVERDUE
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <img t-att-src="kanban_image('hr.employee', 'image_128', record.employee_id.raw_value)"
+                                             t-att-title="record.employee_id.value"
+                                             t-att-alt="record.employee_id.value"
+                                             class="oe_kanban_avatar rounded-circle"
+                                             width="24" height="24"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+</odoo>

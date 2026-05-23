@@ -1,0 +1,11 @@
+<odoo>
+    <data>
+        <!-- Success Message Template -->
+        <template id="website_success_message">
+            <div class="alert alert-success">
+                <h3>Success</h3>
+                <p><t t-esc="message"/></p>
+            </div>
+        </template>
+    </data>
+</odoo>

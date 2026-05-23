@@ -1,0 +1,9 @@
+<odoo>
+    <record id="action_role_assignment_wizard" model="ir.actions.act_window">
+        <field name="name">Role Assignment</field>
+        <field name="res_model">role.assignment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'context': 'the_context_data'}</field>
+    </record>
+</odoo>

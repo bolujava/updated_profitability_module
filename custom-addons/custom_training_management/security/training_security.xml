@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- GROUP CATEGORIES - Separate for each role          -->
+    <!-- ================================================== -->
+    <record id="module_category_training_employee" model="ir.module.category">
+        <field name="name">Training - Employee</field>
+        <field name="description">Employee Training Access</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="module_category_training_manager" model="ir.module.category">
+        <field name="name">Training - Manager</field>
+        <field name="description">Manager Training Access</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="module_category_training_admin" model="ir.module.category">
+        <field name="name">Training - Admin</field>
+        <field name="description">Admin Training Access</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- ================================================== -->
+    <!-- GROUPS - Independent (no implied_ids)              -->
+    <!-- ================================================== -->
+
+    <!-- EMPLOYEES - Basic access -->
+    <record id="group_training_user" model="res.groups">
+        <field name="name">Employee</field>
+        <field name="category_id" ref="module_category_training_employee"/>
+        <field name="comment">Can view assigned trainings and update their own progress</field>
+    </record>
+
+    <!-- MANAGERS - Can manage their team only -->
+    <record id="group_training_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_training_manager"/>
+        <field name="implied_ids" eval="[(4, ref('group_training_user'))]"/>
+        <field name="comment">Can assign training and view reports for direct reports only</field>
+    </record>
+
+    <!-- PEOPLE SERVICES (Administrator) - Full Access -->
+    <record id="group_training_admin" model="res.groups">
+        <field name="name">People Services (Administrator)</field>
+        <field name="category_id" ref="module_category_training_admin"/>
+        <field name="implied_ids" eval="[(4, ref('group_training_manager'))]"/>
+        <field name="comment">Full access to all training features including company-wide assignment</field>
+    </record>
+
+    <!-- ================================================== -->
+    <!-- RECORD RULES                                       -->
+    <!-- ================================================== -->
+
+    <!-- EMPLOYEE RULES (Lowest Permission) -->
+    <record id="training_attendee_employee_rule" model="ir.rule">
+        <field name="name">Employee: Own Trainings Only</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_user'))]"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- MANAGER RULES -->
+    <record id="training_attendee_manager_rule" model="ir.rule">
+        <field name="name">Manager: Only Direct Reports</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_manager'))]"/>
+        <field name="domain_force">
+            [('employee_id.parent_id.user_id', '=', user.id)]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="training_attendee_manager_create_rule" model="ir.rule">
+        <field name="name">Manager: Can Only Assign to Direct Reports</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_manager'))]"/>
+        <field name="domain_force">
+            [('employee_id.parent_id.user_id', '=', user.id)]
+        </field>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ADMIN RULES (OVERRIDE all other rules) -->
+    <record id="training_attendee_admin_full_access" model="ir.rule">
+        <field name="name">Admin: Full Access to All Attendees</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="training_attendee_admin_company_wide" model="ir.rule">
+        <field name="name">Admin: Can Assign Company-Wide</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="training_attendee_admin_create_any" model="ir.rule">
+        <field name="name">Admin: Can Assign to Any Employee</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_write" eval="True"/>
+    </record>
+
+    <!-- GLOBAL RULES (Applied to managers and employees) -->
+    <record id="training_attendee_company_wide_rule" model="ir.rule">
+        <field name="name">Only People Services Can Assign Company-Wide</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_manager')), (4, ref('group_training_user'))]"/>
+        <field name="domain_force">[('assignment_type', '!=', 'company')]</field>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_read" eval="False"/>
+    </record>
+
+    <!-- ================================================== -->
+    <!-- DEPARTMENT VISIBILITY RULES - NEWLY ADDED          -->
+    <!-- ================================================== -->
+
+    <!-- Rule 1: Allow managers to see all employees in their department (attendees) -->
+    <record id="training_attendee_manager_department_view" model="ir.rule">
+        <field name="name">Manager: View All Department Attendees</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="groups" eval="[(4, ref('group_training_manager'))]"/>
+        <field name="domain_force">
+            [('employee_id.department_id.manager_id.user_id', '=', user.id)]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Rule 2: Allow managers to see unassigned published trainings -->
+    <record id="training_course_manager_unassigned_view" model="ir.rule">
+        <field name="name">Manager: View Unassigned Trainings</field>
+        <field name="model_id" ref="model_training_course"/>
+        <field name="groups" eval="[(4, ref('group_training_manager'))]"/>
+        <field name="domain_force">
+            ['&amp;',
+             ('state', '=', 'published'),
+             '|',
+                ('attendee_ids.employee_id.department_id.manager_id.user_id', '=', user.id),
+                ('attendee_ids', '=', False)
+            ]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Rule 3: Employees can ONLY see courses assigned to them (FIXED version) -->
+    <record id="training_course_employee_assigned_only" model="ir.rule">
+        <field name="name">Employee: View Only Assigned Courses</field>
+        <field name="model_id" ref="model_training_course"/>
+        <field name="groups" eval="[(4, ref('group_training_user'))]"/>
+        <field name="domain_force">
+            ['|',
+                ('attendee_ids.employee_id.user_id', '=', user.id),
+                ('create_uid', '=', user.id)
+            ]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Rule 4: Admins have full access to courses -->
+    <record id="training_course_admin_full_access" model="ir.rule">
+        <field name="name">Admin: Full Course Access</field>
+        <field name="model_id" ref="model_training_course"/>
+        <field name="groups" eval="[(4, ref('group_training_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>

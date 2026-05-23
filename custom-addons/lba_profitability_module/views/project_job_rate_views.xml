@@ -1,0 +1,66 @@
+<odoo>
+    <!-- ===================== VIEWS ===================== -->
+    <record id="view_project_job_rate_tree" model="ir.ui.view">
+        <field name="name">project.job.rate.tree</field>
+        <field name="model">project.job.rate</field>
+        <field name="arch" type="xml">
+            <tree string="Job Rates">
+                <field name="name"/>
+                <field name="hourly_rate"/>
+                <field name="daily_rate"/>
+                <field name="product_id"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_project_job_rate_form" model="ir.ui.view">
+        <field name="name">project.job.rate.form</field>
+        <field name="model">project.job.rate</field>
+        <field name="arch" type="xml">
+            <form string="Job Rate">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="hourly_rate"/>
+                        <field name="daily_rate"/>
+                        <field name="product_id" readonly="1"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================== ACTION ===================== -->
+    <record id="action_project_job_rate" model="ir.actions.act_window">
+        <field name="name">Job Rates</field>
+        <field name="res_model">project.job.rate</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ===================== MENUS ===================== -->
+
+    <!-- Job Rates under SALES -->
+    <menuitem id="menu_project_job_rate_sales"
+              name="Job Rates"
+              parent="sale.sale_menu_root"
+              action="action_project_job_rate"
+              sequence="20"/>
+
+    <!-- Job Rates under PROJECT -->
+<!--<menuitem id="menu_project_job_rate_project"
+              name="Job Rates"
+              parent="project.menu_main_pm"
+              action="action_project_job_rate"
+              sequence="40"
+              groups="hr.group_hr_manager,base.group_system"/> -->
+	<record id="menu_project_job_rate_project" model="ir.ui.menu">
+    	<field name="name">Job Rates</field>
+    	<field name="parent_id" ref="project.menu_main_pm"/>
+    	<field name="action" ref="action_project_job_rate"/>
+    	<field name="sequence" eval="40"/>
+    	<field name="groups_id" eval="[(6, 0, [ref('hr.group_hr_manager'), ref('base.group_system')])]"/>
+	</record>
+
+</odoo>

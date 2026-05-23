@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="email_template_training_assignment" model="mail.template">
+        <field name="name">Training Assignment Notification</field>
+        <field name="model_id" ref="model_training_attendee"/>
+        <field name="email_from">${object.company_id.email}</field>
+        <field name="email_to">${object.employee_id.work_email}</field>
+        <field name="subject">Training Assigned: ${object.course_id.name}</field>
+        <field name="body_html">
+            <![CDATA[
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="color: #2E86C1;">New Training Assignment</h2>
+
+                <p>Dear ${object.employee_id.name or ''},</p>
+
+                <p>You have been assigned a new training:</p>
+
+                <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 10px; background-color: #f5f5f5; width: 150px;"><strong>Training Title:</strong></td>
+                        <td style="padding: 10px;">${object.course_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 10px; background-color: #f5f5f5;"><strong>Start Date:</strong></td>
+                        <td style="padding: 10px;">
+                            ${object.date_start.strftime('%B %d, %Y') if object.date_start else ''}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 10px; background-color: #f5f5f5;"><strong>Due Date:</strong></td>
+                        <td style="padding: 10px;">
+                            ${object.date_end.strftime('%B %d, %Y') if object.date_end else ''}
+                        </td>
+                    </tr>
+
+                    % if object.course_id.resource_url:
+                    <tr>
+                        <td><strong>Training Resource Link:</strong></td>
+                        <td>
+                            <a href="${object.course_id.resource_url}" target="_blank">
+                                ${object.course_id.resource_url}
+                            </a>
+                        </td>
+                    </tr>
+                    % endif
+
+                    <tr>
+                        <td style="padding: 10px; background-color: #f5f5f5;"><strong>Assigned By:</strong></td>
+                        <td style="padding: 10px;">
+                            ${object.assigned_by.name if object.assigned_by else ''}
+                        </td>
+                    </tr>
+                </table>
+
+                <p style="margin: 20px 0;">
+                    <a href="${object.get_base_url()}/web#id=${object.id}&model=training.attendee&view_type=form"
+                       style="background-color: #E67E22; color: white; padding: 10px 20px; text-decoration: none; border-radius: 3px; display: inline-block;">
+                        Update Your Progress
+                    </a>
+                </p>
+
+                <p style="margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #ddd; padding-top: 10px;">
+                    This is an automated notification from the Training Management System.
+                </p>
+            </div>
+            ]]>
+        </field>
+    </record>
+
+    <record id="email_template_weekly_reminder" model="mail.template">
+        <field name="name">Training Weekly Reminder</field>
+        <field name="model_id" ref="model_training_attendee"/>
+
+        <field name="email_from">
+            ${object.company_id.email or object.env.company.email or ''}
+        </field>
+
+        <!-- REMOVE email_to if you're controlling recipients from Python -->
+        <field name="email_to">
+            ${object.employee_id.work_email or ''}
+        </field>
+
+        <field name="subject">
+            REMINDER: Training Due Soon - ${object.course_id.name or ''}
+        </field>
+
+        <field name="body_html"><![CDATA[
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+
+            <h2 style="color: #E67E22;">Training Reminder</h2>
+
+            <p>Dear ${object.employee_id.name or ''},</p>
+
+            <p>This is a friendly reminder that you have pending training to complete:</p>
+
+            <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+
+                <tr>
+                    <td style="padding: 10px; background-color: #f5f5f5; width: 150px;">
+                        <strong>Training Title:</strong>
+                    </td>
+                    <td style="padding: 10px;">
+                        ${object.course_id.name or ''}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 10px; background-color: #f5f5f5;">
+                        <strong>Due Date:</strong>
+                    </td>
+                    <td style="padding: 10px; font-weight: bold;">
+                        ${object.date_end or ''}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 10px; background-color: #f5f5f5;">
+                        <strong>Current Status:</strong>
+                    </td>
+                    <td style="padding: 10px;">
+                        ${dict(object._fields['state'].selection).get(object.state, '')}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 10px; background-color: #f5f5f5;">
+                        <strong>Completion:</strong>
+                    </td>
+                    <td style="padding: 10px;">
+                        ${object.completion_percentage or 0}%
+                    </td>
+                </tr>
+
+                % if object.course_id.resource_url:
+                <tr>
+                    <td style="padding: 10px; background-color: #f5f5f5;">
+                        <strong>Training Resource:</strong>
+                    </td>
+                    <td style="padding: 10px;">
+                        <a href="${object.course_id.resource_url}" target="_blank">
+                            ${object.course_id.resource_url}
+                        </a>
+                    </td>
+                </tr>
+                % endif
+
+            </table>
+
+            <p style="margin: 20px 0;">
+                <a href="${object.get_base_url()}/web#id=${object.id}&model=training.attendee&view_type=form"
+                   style="background-color: #E67E22; color: white; padding: 10px 20px; text-decoration: none; border-radius: 3px; display: inline-block;">
+                    Update Your Progress
+                </a>
+            </p>
+
+            <p style="margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #ddd; padding-top: 10px;">
+                You will receive weekly reminders until this training is marked as completed.
+            </p>
+
+        </div>
+        ]]></field>
+    </record>
+
+
+    <record id="email_template_training_completed" model="mail.template">
+        <field name="name">Training Completed Notification</field>
+        <field name="model_id" ref="model_training_attendee"/>
+
+        <field name="subject">
+            Congratulations! Training Completed: ${object.course_id.name or ''}
+        </field>
+
+        <field name="email_from">
+            ${object.company_id.email or object.env.company.email or ''}
+        </field>
+
+        <field name="email_to">
+            ${object.employee_id.work_email or ''}
+        </field>
+
+        <field name="body_html"><![CDATA[
+        <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e1e1e1; border-radius: 10px; overflow: hidden; font-family: Arial, sans-serif;">
+            <div style="background-color: #28a745; padding: 20px; text-align: center; color: white;">
+                <h2>Training Accomplished!</h2>
+            </div>
+
+            <div style="padding: 30px; line-height: 1.6; color: #444;">
+                <p>Hello <strong>${object.employee_id.name or ''}</strong>,</p>
+
+                <p>Congratulations! You have successfully completed the following training course:</p>
+
+                <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #28a745; margin: 20px 0;">
+                    <strong>Course:</strong> ${object.course_id.name or ''}<br/>
+                    <strong>Completion Date:</strong> ${object.date_completed or ''}
+                </div>
+
+                <p>If a certificate is required, please log in to the portal to upload your copy for verification.</p>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${object.get_base_url()}/web#id=${object.id}&model=training.attendee&view_type=form"
+                       style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Upload Certificate
+                    </a>
+                </div>
+            </div>
+        </div>
+        ]]></field>
+    </record>
+
+    <record id="email_template_certificate_uploaded_manager" model="mail.template">
+        <field name="name">Manager: Certificate Upload Notification</field>
+        <field name="model_id" ref="model_training_attendee"/>
+
+        <field name="subject">
+            New Certificate Uploaded: ${object.employee_id.name or ''} - ${object.course_id.name or ''}
+        </field>
+
+        <field name="email_to">
+            ${object.assigned_by.email or ''}
+        </field>
+
+        <field name="email_from">
+            ${object.company_id.email or object.env.company.email or ''}
+        </field>
+
+        <field name="body_html"><![CDATA[
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee;">
+            <h3 style="color: #007bff;">Certificate Verification Required</h3>
+
+            <p>A new certificate has been uploaded for verification:</p>
+
+            <ul>
+                <li><b>Employee:</b> ${object.employee_id.name or ''}</li>
+                <li><b>Course:</b> ${object.course_id.name or ''}</li>
+                <li><b>Date Completed:</b> ${object.date_completed or ''}</li>
+            </ul>
+
+            <p>Click below to view the record and download the certificate:</p>
+
+            <div style="margin-top: 20px;">
+                <a href="${object.get_base_url()}/web#id=${object.id}&model=training.attendee&view_type=form"
+                   style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                    View Training Record
+                </a>
+            </div>
+        </div>
+        ]]></field>
+    </record>
+
+    <record id="email_template_training_overdue" model="mail.template">
+        <field name="name">Training Overdue Notification</field>
+        <field name="model_id" ref="model_training_attendee"/>
+
+        <field name="email_from">
+            ${object.company_id.email or object.env.company.email or ''}
+        </field>
+
+        <field name="email_to">
+            ${object.employee_id.work_email or ''}
+        </field>
+
+        <field name="subject">
+            Overdue Training Alert: ${object.course_id.name or ''}
+        </field>
+
+        <field name="auto_delete" eval="True"/>
+
+        <field name="body_html"><![CDATA[
+            <p>Dear ${object.employee_id.name or ''},</p>
+
+            <p>
+                This is an automated notification that the training
+                <strong>${object.course_id.name or ''}</strong> assigned to you is
+                <span style="color:red;"><strong>OVERDUE</strong></span>.
+            </p>
+
+            <p><strong>Training Details:</strong></p>
+
+            <ul>
+                <li>Employee: ${object.employee_id.name or ''}</li>
+                <li>Manager: ${object.employee_id.parent_id.name if object.employee_id.parent_id else 'N/A'}</li>
+                <li>Course: ${object.course_id.name or ''}</li>
+                <li>End Date: ${object.date_end or ''}</li>
+                <li>Completion: ${object.completion_percentage or 0}%</li>
+
+                % if object.course_id.resource_url:
+                    <li>
+                        Training Resource:
+                        <a href="${object.course_id.resource_url}" target="_blank">
+                            ${object.course_id.resource_url}
+                        </a>
+                    </li>
+                % endif
+            </ul>
+
+            <p>Please take the necessary actions to complete this training.</p>
+
+            <p>
+                Regards,<br/>
+                Training Management System
+            </p>
+        ]]></field>
+    </record>
+</odoo>

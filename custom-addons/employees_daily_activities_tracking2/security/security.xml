@@ -1,0 +1,124 @@
+<odoo>
+    <record id="module_category_daily_activity" model="ir.module.category">
+        <field name="name">Employee Daily Activity Tracker</field>
+        <field name="sequence">35</field>
+    </record>
+
+        <!-- Employee -->
+    <record id="group_daily_activity_employee" model="res.groups">
+        <field name="name">Daily Activity – Employee</field>
+        <field name="category_id" ref="module_category_daily_activity"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Team Lead -->
+    <record id="group_daily_activity_team_lead" model="res.groups">
+        <field name="name">Daily Activity – Team Lead</field>
+        <field name="category_id" ref="module_category_daily_activity"/>
+        <field name="implied_ids" eval="[(4, ref('group_daily_activity_employee'))]"/>
+    </record>
+
+    <!-- Department Manager -->
+    <record id="group_daily_activity_manager" model="res.groups">
+        <field name="name">Daily Activity – Department Manager</field>
+        <field name="category_id" ref="module_category_daily_activity"/>
+        <field name="implied_ids" eval="[(4, ref('group_daily_activity_team_lead'))]"/>
+    </record>
+
+    <!-- Administrator -->
+    <record id="group_daily_activity_admin" model="res.groups">
+        <field name="name">Daily Activity – Administrator</field>
+        <field name="category_id" ref="module_category_daily_activity"/>
+        <field name="implied_ids" eval="[(4, ref('group_daily_activity_manager')),(4, ref('base.group_system'))]"/>
+    </record>
+
+    
+
+        <!-- Employee: own records -->
+    <record id="rule_daily_activity_employee_own" model="ir.rule">
+        <field name="name">Daily Activity – Employee Own Records</field>
+        <field name="model_id" ref="model_employee_daily_activity"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_employee'))]"/>
+    </record>
+
+    <record id="rule_employee_overtime_employee_own" model="ir.rule">
+        <field name="name">Overtime – Employee Own Records</field>
+        <field name="model_id" ref="model_employee_overtime"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_employee'))]"/>
+    </record>
+
+    <!-- Team Lead -->
+    <record id="rule_daily_activity_team_lead" model="ir.rule">
+        <field name="name">Daily Activity – Team Lead Records</field>
+        <field name="model_id" ref="model_employee_daily_activity"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('employee_id.user_id', '=', user.id),
+                ('employee_id.team_lead_id.user_id', '=', user.id)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_team_lead'))]"/>
+    </record>
+
+    <record id="rule_employee_overtime_team_lead" model="ir.rule">
+        <field name="name">Overtime – Team Lead Records</field>
+        <field name="model_id" ref="model_employee_overtime"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('employee_id.user_id', '=', user.id),
+                ('employee_id.team_lead_id.user_id', '=', user.id)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_team_lead'))]"/>
+    </record>
+
+    <!-- Department Manager -->
+    <record id="rule_daily_activity_department_manager" model="ir.rule">
+        <field name="name">Daily Activity – Department Manager Records</field>
+        <field name="model_id" ref="model_employee_daily_activity"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('employee_id.user_id', '=', user.id),
+                ('department_id.manager_id.user_id', '=', user.id)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_manager'))]"/>
+    </record>
+
+    <record id="rule_employee_overtime_manager" model="ir.rule">
+        <field name="name">Overtime – Department Manager Records</field>
+        <field name="model_id" ref="model_employee_overtime"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('employee_id.user_id', '=', user.id),
+                ('department_id.manager_id.user_id', '=', user.id)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_manager'))]"/>
+    </record>
+
+    <!-- Admin -->
+    <record id="rule_daily_activity_admin_all" model="ir.rule">
+        <field name="name">Daily Activity – Administrator Full Access</field>
+        <field name="model_id" ref="model_employee_daily_activity"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_admin'))]"/>
+    </record>
+
+    <record id="rule_employee_overtime_admin" model="ir.rule">
+        <field name="name">Overtime – Admin Full Access</field>
+        <field name="model_id" ref="model_employee_overtime"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_daily_activity_admin'))]"/>
+    </record>
+
+
+
+    
+</odoo>

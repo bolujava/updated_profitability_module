@@ -1,0 +1,36 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Automated Action for Project Manager Assignment -->
+        <record id="automated_action_project_manager_assigned" model="ir.actions.server">
+            <field name="name">Send Email on Project Manager Assignment</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = model._send_role_emails(model)
+            </field>
+            <!-- We do not use 'domain' directly. Instead, use filters or conditions in the action code. -->
+        </record>
+
+        <!-- Automated Action for Team Lead Assignment -->
+        <record id="automated_action_project_team_lead_assigned" model="ir.actions.server">
+            <field name="name">Send Email on Project Team Lead Assignment</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = model._send_role_emails(model)
+            </field>
+            <!-- Similarly, avoid using 'domain'. Instead, handle conditions within the code itself -->
+        </record>
+
+        <!-- Automated Action for Department Manager Assignment -->
+        <record id="automated_action_project_department_manager_assigned" model="ir.actions.server">
+            <field name="name">Send Email on Project Department Manager Assignment</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = model._send_role_emails(model)
+            </field>
+            <!-- Avoid using 'domain'. Implement any conditions in the Python code -->
+        </record>
+    </data>
+</odoo>

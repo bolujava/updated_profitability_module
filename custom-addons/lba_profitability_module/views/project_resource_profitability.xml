@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_project_resource_dashboard" model="ir.ui.view">
+        <field name="name">project.resource.profit.dashboard</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <tree string="Project Resource Dashboard">
+                <field name="name"/>
+                <field name="sale_order_id"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="total_revenue" string="Revenue" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_cost" string="Cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_profit" string="Profit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="profit_margin" string="Margin %"/>
+                <button name="action_open_resource_profitability"
+                        type="object"
+                        string="View Resource Profitability"
+                        class="btn-primary"
+                        icon="fa-bar-chart"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_project_resource_profit_tree" model="ir.ui.view">
+        <field name="name">project.resource.profit.tree</field>
+        <field name="model">project.resource.profit</field>
+        <field name="arch" type="xml">
+            <tree string="Resource Profitability">
+                <field name="project_id"/>
+                <field name="employee_id"/>
+
+                <field name="company_currency_id" invisible="1"/>
+
+                <field name="selling_price_per_hour" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+                <field name="cost_per_hour" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+
+                <field name="expected_hours"/>
+                <field name="time_spent"/>
+
+                <field name="cost_incurred" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+                <field name="selling_total" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+                <field name="profit" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+
+                <field name="profit_margin"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_project_resource_dashboard" model="ir.actions.act_window">
+        <field name="name">Project Resource Profitability</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_project_resource_dashboard"/>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No projects found.
+            </p>
+            <p>
+                Click on "View Resource Profitability" to see detailed resource costs and profitability for each project.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_project_resource_profitability"
+        name="Resource Profitability"
+        parent="project.menu_main_pm"
+        action="action_project_resource_dashboard"
+        sequence="15"
+        groups="sales_team.group_sale_manager,account.group_account_manager,base.group_system"/>
+</odoo>

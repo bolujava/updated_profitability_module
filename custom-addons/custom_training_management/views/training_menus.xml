@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ================== ACTIONS (DEFINE FIRST) ================== -->
+
+        <!-- Action for My Trainings -->
+        <record id="action_my_trainings" model="ir.actions.act_window">
+            <field name="name">My Trainings</field>
+            <field name="res_model">training.attendee</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_my_trainings': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    You have no assigned trainings.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action for All Assignments -->
+        <record id="action_training_attendee" model="ir.actions.act_window">
+            <field name="name">All Assigned Trainings</field>
+            <field name="res_model">training.attendee</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No training assignments yet.
+                </p>
+                <p>
+                    Assign trainings to employees using the "Assign Training" button.
+                </p>
+            </field>
+        </record>
+
+         <record id="action_training_board" model="ir.actions.act_window">
+            <field name="name">Training Board</field>
+            <field name="res_model">training.attendee</field>
+            <field name="view_mode">kanban,tree,form</field>
+         	<field name="view_id" ref="view_training_attendee_kanban"/>
+            <field name="context">{'default_group_by': 'stage_id'}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No trainings in the board yet!
+                </p>
+            </field>
+         </record>
+
+<!--        <record id="action_training_board" model="ir.actions.act_window">-->
+<!--            <field name="name">Training Board</field>-->
+<!--            <field name="res_model">training.attendee</field>-->
+<!--            <field name="view_mode">kanban,tree,form</field>-->
+<!--            <field name="view_id" ref="view_training_attendee_kanban"/>-->
+<!--            <field name="context">{'group_by': 'stage_id'}</field>-->
+<!--        </record>-->
+
+        <!-- Action for Training Reports -->
+        <record id="action_training_report" model="ir.actions.act_window">
+            <field name="name">Training Reports</field>
+            <field name="res_model">training.attendee</field>
+            <field name="view_mode">tree,pivot,graph</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No training data available.
+                </p>
+                <p>
+                    Generate training reports and export to Excel or PDF.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action for Training Dashboard -->
+        <record id="action_training_dashboard" model="ir.actions.act_window">
+            <field name="name">Training Dashboard</field>
+            <field name="res_model">training.attendee</field>
+            <field name="view_mode">pivot,graph</field>
+            <field name="context">{'search_default_filter_active': 1}</field>
+        </record>
+
+        <!-- Settings Action -->
+        <record id="action_training_settings" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module': 'custom_training_management'}</field>
+        </record>
+
+        <!-- Action for Training Course -->
+        <record id="action_training_course" model="ir.actions.act_window">
+            <field name="name">All Trainings</field>
+            <field name="res_model">training.course</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Action for Training Category -->
+        <record id="action_training_category" model="ir.actions.act_window">
+            <field name="name">Categories</field>
+            <field name="res_model">training.category</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Action for Training Payment -->
+        <record id="action_training_payment" model="ir.actions.act_window">
+            <field name="name">Training Payments</field>
+            <field name="res_model">training.payment</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Action for Company Training Report Wizard -->
+        <record id="action_company_training_report_wizard" model="ir.actions.act_window">
+            <field name="name">Company Training Report</field>
+            <field name="res_model">company.training.report.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!-- Search Filter for My Trainings -->
+        <record id="training_attendee_my_filter" model="ir.filters">
+            <field name="name">My Trainings</field>
+            <field name="model_id">training.attendee</field>
+            <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+            <field name="user_id" eval="False"/>
+            <field name="is_default" eval="True"/>
+            <field name="action_id" ref="action_my_trainings"/>
+        </record>
+
+        <!-- ================== MENUS (DEFINE AFTER ACTIONS) ================== -->
+
+<!--        &lt;!&ndash; Main Menu &ndash;&gt;-->
+<!--        <menuitem id="menu_training_root" name="Training" sequence="10" web_icon="custom_training_management,static/description/icon.png"/>-->
+
+<!--        &lt;!&ndash; ===== TRAINING MENU - MANAGER/ADMIN ONLY ===== &ndash;&gt;-->
+<!--        <menuitem id="menu_training"-->
+<!--                  name="Trainings"-->
+<!--                  parent="menu_training_root"-->
+<!--                  sequence="10"-->
+<!--                  groups="custom_training_management.group_training_manager,custom_training_management.group_training_user,custom_training_management.group_training_admin"/>-->
+
+<!--        <menuitem id="menu_training_course"-->
+<!--                  name="All Trainings"-->
+<!--                  parent="menu_training"-->
+<!--                  action="action_training_course"-->
+<!--                  sequence="10"-->
+<!--                  groups="custom_training_management.group_training_manager,custom_training_management.group_training_admin"/>-->
+
+<!--        <menuitem id="menu_training_category"-->
+<!--                  name="Categories"-->
+<!--                  parent="menu_training"-->
+<!--                  action="action_training_category"-->
+<!--                  sequence="20"-->
+<!--                  groups="custom_training_management.group_training_admin"/>-->
+
+<!--        &lt;!&ndash; ===== ASSIGNMENT MENU - EMPLOYEES CAN SEE MY TRAININGS ===== &ndash;&gt;-->
+<!--        <menuitem id="menu_assignment"-->
+<!--                  name="Assigned Trainings"-->
+<!--                  parent="menu_training_root"-->
+<!--                  sequence="20"/>-->
+
+<!--        <menuitem id="menu_training_attendee"-->
+<!--                  name="All Assigned Trainings"-->
+<!--                  parent="menu_assignment"-->
+<!--                  action="action_training_attendee"-->
+<!--                  sequence="10"-->
+<!--                  groups="custom_training_management.group_training_manager,custom_training_management.group_training_admin"/>-->
+
+<!--        &lt;!&ndash; THIS IS THE ONLY MENU EMPLOYEES SHOULD SEE UNDER ASSIGNMENTS &ndash;&gt;-->
+<!--        <menuitem id="menu_my_trainings"-->
+<!--                  name="My Trainings"-->
+<!--                  parent="menu_assignment"-->
+<!--                  action="action_my_trainings"-->
+<!--                  sequence="20"-->
+<!--                  groups="custom_training_management.group_training_user"/>-->
+
+<!--        &lt;!&ndash; ===== DASHBOARD & REPORTS - VISIBLE TO ALL (BUT FILTERED) ===== &ndash;&gt;-->
+<!--        <menuitem id="menu_dashboard"-->
+<!--                  name="Dashboard &amp; Reports"-->
+<!--                  parent="menu_training_root"-->
+<!--                  sequence="30"/>-->
+
+<!--        <menuitem id="menu_training_dashboard"-->
+<!--                  name="Dashboard"-->
+<!--                  parent="menu_dashboard"-->
+<!--                  action="action_training_dashboard"-->
+<!--                  sequence="10"/>-->
+
+<!--        <menuitem id="menu_training_report"-->
+<!--                  name="Training Reports"-->
+<!--                  parent="menu_dashboard"-->
+<!--                  action="action_training_report"-->
+<!--                  sequence="20"/>-->
+
+<!--        &lt;!&ndash; ===== COMPANY TRAINING REPORT - MANAGER/ADMIN ONLY ===== &ndash;&gt;-->
+<!--        <menuitem id="menu_company_training_report"-->
+<!--                  name="Company Training Report"-->
+<!--                  parent="menu_dashboard"-->
+<!--                  action="action_company_training_report_wizard"-->
+<!--                  sequence="15"-->
+<!--                  groups="custom_training_management.group_training_manager,custom_training_management.group_training_admin"/>-->
+
+<!--        &lt;!&ndash; ===== PAYMENT MENU - MANAGER/ADMIN ONLY ===== &ndash;&gt;-->
+<!--        <menuitem id="menu_training_payment"-->
+<!--                  name="Training Payments"-->
+<!--                  parent="menu_training_root"-->
+<!--                  action="action_training_payment"-->
+<!--                  sequence="35"-->
+<!--                  groups="custom_training_management.group_training_manager,custom_training_management.group_training_admin"/>-->
+
+<!--        <menuitem id="menu_training_board"-->
+<!--          name="Training Board"-->
+<!--          parent="menu_training"-->
+<!--          action="action_training_board"-->
+<!--          sequence="30"/>-->
+
+        <menuitem id="menu_training_root" name="Training" sequence="10" web_icon="custom_training_management,static/description/icon.png"/>
+
+        <menuitem id="menu_training" name="Trainings" parent="menu_training_root" sequence="10"
+                  groups="custom_training_management.group_training_user"/>
+
+            <menuitem id="menu_training_course" name="All Trainings" parent="menu_training" action="action_training_course" sequence="10"
+                      groups="custom_training_management.group_training_manager"/>
+
+            <menuitem id="menu_training_category" name="Categories" parent="menu_training" action="action_training_category" sequence="20"
+                      groups="custom_training_management.group_training_admin"/>
+
+            <menuitem id="menu_training_board" name="Training Board" parent="menu_training" action="action_training_board" sequence="30"/>
+
+        <menuitem id="menu_assignment" name="Assigned Trainings" parent="menu_training_root" sequence="20"/>
+
+            <menuitem id="menu_training_attendee" name="All Assigned Trainings" parent="menu_assignment" action="action_training_attendee" sequence="10"
+                      groups="custom_training_management.group_training_manager"/>
+
+            <menuitem id="menu_my_trainings" name="My Trainings" parent="menu_assignment" action="action_my_trainings" sequence="20"
+                      groups="custom_training_management.group_training_user"/>
+
+        <menuitem id="menu_dashboard" name="Dashboard &amp; Reports" parent="menu_training_root" sequence="30"/>
+
+            <menuitem id="menu_training_dashboard" name="Dashboard" parent="menu_dashboard" action="action_training_dashboard" sequence="10"/>
+
+            <menuitem id="menu_training_report" name="Training Reports" parent="menu_dashboard" action="action_training_report" sequence="20"/>
+
+            <menuitem id="menu_company_training_report" name="Company Training Report" parent="menu_dashboard" action="action_company_training_report_wizard" sequence="15"
+                      groups="custom_training_management.group_training_manager"/>
+
+        <menuitem id="menu_training_payment" name="Training Payments" parent="menu_training_root" action="action_training_payment" sequence="35"
+                  groups="custom_training_management.group_training_manager"/>
+
+<!--        <menuitem id="menu_training_settings" name="Settings" parent="menu_training_root" action="action_training_settings" sequence="100"-->
+<!--                  groups="custom_training_management.group_training_admin"/>-->
+
+    </data>
+</odoo>

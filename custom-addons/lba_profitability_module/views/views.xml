@@ -1,0 +1,660 @@
+<odoo>
+    <data>
+        <record id="action_project_change_log" model="ir.actions.act_window">
+            <field name="name">Project Change Logs</field>
+            <field name="res_model">project.change.log</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('project_id', '=', active_id)]</field>
+        </record>
+
+        <!-- Decline Role Wizard Form View -->
+        <record id="view_decline_role_wizard_form" model="ir.ui.view">
+            <field name="name">decline.role.wizard.form</field>
+            <field name="model">decline.role.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Decline Role">
+                    <sheet>
+                        <group>
+                            <field name="project_id"
+                                    attrs="{'readonly': [('project_id', '!=', False)]}"
+                                    placeholder="Project will be set automatically" />
+
+                            <!-- Role Field -->
+                            <field name="role_id"
+                                    attrs="{'readonly': [('role_id', '!=', False)]}"
+                                    placeholder="Role will be set automatically" />
+
+                            <!-- Reason for Declining -->
+                            <field name="reason" placeholder="Please specify the reason" />
+                        </group>
+                    </sheet>
+                    <footer>
+                        <!-- Decline Role Button with Red Color (btn-danger) -->
+                        <button string="Decline Role"
+                                type="object"
+                                name="action_decline_role"
+                                class="btn-danger" />
+                        <button string="Cancel"
+                                type="object"
+                                name="action_cancel"
+                                class="btn-secondary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_order_line_form_inherit_job_rate" model="ir.ui.view">
+            <field name="name">sale.order.line.form.inherit.job.rate</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group" position="inside">
+                    <group string="Job Rate Details">
+                        <field name="job_rate_id"/>
+                        <field name="cost_per_hour"/>
+                        <field name="total_cost" readonly="1"/>
+                        <field name="profit" readonly="1"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_sale_order_form_inherit_profitability" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.profitability</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='order_lines']/field[@name='order_line']" position="after">
+                    <group string="Profitability Summary" invisible="1">
+                        <field name="total_revenue" readonly="1"/>
+                        <field name="total_cost" readonly="1"/>
+                        <field name="profit" readonly="1"/>
+                        <field name="profit_margin" readonly="1"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- views/sale_order_views.xml -->
+        <record id="view_order_form_project_title" model="ir.ui.view">
+            <field name="name">sale.order.form.project.title</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="project_title"
+                           string="Project Title"
+                           placeholder="Leave blank → uses SO001 - Client Name"
+                           class="oe_inline" invisible="1"/>
+                    <field name="project_document_link"
+                           widget="url"
+                           placeholder="Paste Microsoft Teams channel link for project documents..."/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_decline_role_wizard" model="ir.actions.act_window">
+            <field name="name">Decline Role Wizard</field>
+            <field name="res_model">decline.role.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'active_id': active_id}</field> <!-- Pass the current project ID -->
+        </record>
+
+        <record id="view_project_project_form_inherit" model="ir.ui.view">
+            <field name="name">project.project.form.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">false</attribute>
+                </xpath>
+                <xpath expr="//sheet" position="inside">
+                    <field name="is_edit_mode" invisible="1"/>
+                </xpath>
+                <xpath expr="//header" position="attributes">
+                    <attribute name="class">oe_form_header</attribute>
+                </xpath>
+                <xpath expr="//form//header" position="inside">
+
+
+                    <button name="%(action_project_change_log)d" type="action" class="oe_stat_button"
+                            icon="fa-cogs" string="View Changes"/>
+
+                    <button name="accept_team_lead" string="Accept Team Lead Role" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('can_accept_team_lead', '=', False)]}"/>
+
+                    <button name="%(action_decline_role_wizard)d"
+                            string="Decline Team Lead Role"
+                            type="action"
+                            class="btn-danger"
+                            attrs="{'invisible': [('can_accept_team_lead', '=', False)]}"
+                            context="{'default_project_id': active_id, 'default_role': 'team_lead'}"/>
+
+                    <button name="accept_project_manager" string="Accept Project Manager Role" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('can_accept_project_manager', '=', False)]}"/>
+
+                    <!-- Decline Project Manager Role -->
+                    <button name="%(action_decline_role_wizard)d"
+                            string="Decline Project Manager Role"
+                            type="action"
+                            class="btn-danger"
+                            attrs="{'invisible': [('can_accept_project_manager', '=', False)]}"
+                            context="{'default_project_id': active_id, 'default_role': 'project_manager'}"/>
+
+                    <button name="accept_department_manager" string="Accept Department Manager Role" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('can_accept_department_manager', '=', False)]}"/>
+
+                    <!-- Decline Department Manager Role -->
+                    <button name="%(action_decline_role_wizard)d"
+                            string="Decline Department Manager Role"
+                            type="action"
+                            class="btn-danger"
+                            attrs="{'invisible': [('can_accept_department_manager', '=', False)]}"
+                            context="{'default_project_id': active_id, 'default_role': 'department_manager'}"/>
+
+                    <!-- <field name="name" attrs="{'readonly': [('is_edit_mode', '=', False)]}" /> -->
+
+                </xpath>
+                <!-- Add custom field before 'user_id' -->
+                <xpath expr="//field[@name='user_id']" position="before">
+                     <field name="document_upload_link"
+                           widget="url"
+                           placeholder="Synced from Sales Order..."
+                           string="Teams Link"
+                           readonly="1"/>
+                    <field name="pmo" readonly = "1"/>
+                    <field name="current_user_id" invisible="1"/>
+                    <field name="can_edit_pmo" invisible="1"/>
+                    <field name="can_edit_project_manager" invisible="1"/>
+                    <field name="can_edit_department_manager" invisible="1"/>
+                </xpath>
+
+                <!-- Replace 'user_id' with 'project_manager' -->
+                <xpath expr="//field[@name='user_id']" position="replace">
+                    <field name="project_manager" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
+                    <field name="can_accept_project_manager" invisible="1"/>
+                    <field name="starting_date" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
+                    <field name="ending_date" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
+                    <!-- <field name="ending_date" attrs="{'readonly': ['|', ('is_edit_mode', '=', False), ('can_edit_project_manager', '=', False)]}"/> -->
+                </xpath>
+                <xpath expr="//sheet/notebook" position="inside">
+                    <page name="profitability" string="Profitability">
+                        <group string="Profitability" invisible="1">
+                            <field name="total_revenue" readonly="1"/>
+                            <field name="total_cost" readonly="1"/>
+                            <field name="profit" readonly="1"/>
+                            <field name="profit_margin" readonly="1"/>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//page[@name='profitability']/group" position="after">
+                    <group string="Financial Summary">
+                        <field name="currency_id" invisible="1"/>
+                        <field name="total_hours" string="Total Hours Expected" readonly="1" invisible="1"/>
+                        <field name="total_planned_hours" string="Total Expected Hours" readonly="1"/>
+                        <field name="delivered_hours"
+                               string="Delivered Hours"
+                               widget="float"
+                               options="{'digits': [0, 4]}"
+                               class="text-info font-weight-bold"/>
+
+                        <field name="total_cost"
+                               string="Total Internal Cost Price"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id', 'position': 'before'}"
+                               readonly="1"/>
+
+                        <field name="total_expenses"
+                               string="Other Expenses"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id', 'position': 'before'}"
+                               readonly="1"/>
+
+                        <field name="total_project_cost"
+                               string="Total Project Cost"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id', 'position': 'before'}"
+                               class="text-danger font-weight-bold"/>
+
+                        <field name="total_revenue"
+                               string="Total Selling Price"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id', 'position': 'before'}"
+                               class="text-success font-weight-bold"/>
+
+                        <field name="total_profit"
+                               string="Total Profit"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"
+                               decoration-danger="total_revenue &lt; total_project_cost"
+                               decoration-success="total_revenue &gt;= total_project_cost"/>
+
+                        <field name="profit_margin"
+                               string="Profit Margin (%)"
+                               widget="float"
+                               options="{'digits': [0, 2]}"
+                               decoration-danger="total_revenue &lt; total_project_cost"
+                               decoration-success="total_revenue &gt;= total_project_cost"/>
+                    </group>
+                </xpath>
+
+                <xpath expr="//sheet/notebook" position="inside">
+                    <page string="Change Logs">
+                        <field name="change_log_ids">
+                            <tree>
+                                <field name="field_name"/>
+                                <field name="old_value"/>
+                                <field name="new_value"/>
+                                <field name="change_date"/>
+                            </tree>
+                        </field>
+                        <field name="change_log_ids" widget="one2many_list" string="Change Log" readonly="1" invisible="1"/>
+
+                    </page>
+                </xpath>
+                <!-- Modify the settings page and add a new group with custom fields -->
+                <xpath expr="//page[@name='settings']" position="inside">
+                    <group string="Department Information" >
+                        <field name="department_id" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
+                        <field name="department_manager_id" readonly="1"/>
+                        <field name="can_accept_department_manager" invisible="1"/>
+<!--                        <field name="team_lead_id" attrs="{'readonly': [('can_edit_department_manager', '=', False)]}"/>-->
+                        <field name="team_lead_id" force_save="1" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="can_accept_team_lead" invisible="1"/>
+                        <field name="status" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
+                    </group>
+
+                    <!-- Expenses Group with One2many field -->
+                    <group string="Expenses" colspan="5">
+                        <field name="expense_ids" widget="one2many" options="{'no_create': True}"/>
+                    </group>
+
+                    <!-- Budget Monitoring and Profitability Group -->
+                    <group string="Budget Monitoring and Profitability">
+                        <!-- <field name ="is_edit_mode" invisible = "1"/> -->
+                        <field name="budget" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
+                        <field name="budget_utilized" readonly="1"/>
+                        <field name="budget_remaining" readonly="1"/>
+                        <field name="forecasted_budget_overrun" readonly="1"/>
+                        <field name="budget_alert_threshold" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
+                        <field name="profitability"/>
+                        <field name="budget_status" readonly="1" widget="statusbar"
+                               statusbar_visible="safe,warning,exceeded" statusbar_colors="{'safe': 'green','warning': 'orange','exceeded': 'red'}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_task_kanban_inherit_avatar" model="ir.ui.view">
+            <field name="name">project.task.kanban.inherit.avatar</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="assigned_employee_ids"/>
+                </xpath>
+
+                <xpath expr="//div[contains(@class, 'oe_kanban_bottom_right')]/field[@name='user_id']" position="replace">
+                    <field name="assigned_employee_ids" widget="many2many_avatar_user"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit the existing project tree view -->
+        <record id="view_project_project_tree_inherit" model="ir.ui.view">
+            <field name="name">project.project.tree.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project"/>
+            <field name="arch" type="xml">
+                <!-- Disable the Create button in the Tree view -->
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="create">false</attribute>
+                </xpath>
+
+                <!-- Replace 'user_id' field with 'project_manager' -->
+                <xpath expr="//field[@name='user_id']" position="replace">
+                    <field name="project_manager"/>
+                </xpath>
+
+                <!-- Add new fields to the Tree view -->
+                <xpath expr="//tree" position="inside">
+                    <field name="department_id"/>
+                    <field name="department_manager_id"/>
+                    <field name="team_lead_id"/>
+                    <field name="status"/>
+                    <field name="starting_date"/>
+                    <field name="ending_date"/>
+                </xpath>
+
+            </field>
+        </record>
+        <!-- search View for Project Enhancement-->
+        <record id="view_project_project_search_inherit" model="ir.ui.view">
+            <field name="name">project.project.search.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project_project_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                        <field name="department_id"/>
+                        <field name="status"/>
+                        <field name="project_manager"/>
+                        <field name="team_lead_id"/>
+                        <field name="task_names" string="Task Names"/>
+                        <filter name="task" string="Tasks" domain="[('task_ids', '!=', False)]"/>
+                        <filter string="Active" name="active"
+                                domain="[('status', '=', 'active')]" />
+                        <filter string="Closed" name="closed" domain="[('status', '=', 'closed')]" />
+                        <filter string="On Hold" name="on_hold" domain="[('status', '=', 'on_hold')]"/>
+                        <filter string="De-prioritized" name="deprioritized" domain="[('status', '=', 'deprioritized')]"/>
+                </xpath>
+
+                <xpath expr="//search/group" position="inside">
+                            <!-- <group expand="0" string="Group By"> -->
+                                <filter name="group_by_department_id" string="Department" context="{'group_by':'department_id'}"/>
+                                <filter name="group_by_status" string="Status" context="{'group_by':'status'}"/>
+                                <filter name="group_task" string="Tasks" context="{'group_by': 'task_ids'}"/>
+                                <filter name="group_starting_date" string="Starting Date" domain="[]" context="{'group_by': 'starting_date'}"/>
+                                <filter name="group_ending_date" string="Ending Date" domain="[]" context="{'group_by': 'ending_date'}"/>
+                            <!-- </group> -->
+                    </xpath>
+            </field>
+        </record>
+        <record id="default_project_filter_active" model="ir.filters">
+            <field name="name">Active Projects</field>
+            <field name="model_id">project.project</field>
+            <field name="context">{}</field>
+            <field name="domain">[('status', 'in', ['active', 'on_hold'])]</field>
+            <field name="is_default">True</field>
+        </record>
+
+
+        <record id="view_hr_expense_form_inherit" model="ir.ui.view">
+            <field name="name">hr.expense.form.inherit</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group" position="after">
+                    <group>
+                        <field name="project_id" placeholder="Select a Project"/>
+                        <field name="category_id"/>
+                        <field name="transport_trip_id"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Tree or List View for Project Expense extension -->
+        <record id="view_hr_expense_tree_inherit" model="ir.ui.view">
+            <field name="name">hr.expense.tree.inherit</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.view_expenses_tree"/>
+            <field name="arch" type="xml">
+                <!-- Use XPath to insert the project_id field after the description field -->
+                <xpath expr="//tree" position="inside">
+                        <field name="project_id"/>
+                        <field name="category_id"/>
+                        <field name="transport_trip_id"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <!-- Search View for Project Expense extension -->
+        <record id="view_hr_expense_search_inherit" model="ir.ui.view">
+            <field name="name">hr.expense.search.inherit</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                        <field name="project_id"/>
+                        <field name="category_id"/>
+                        <field name="transport_trip_id"/>
+                </xpath>
+
+                <xpath expr="//search/group" position="inside">
+                        <!-- <group expand="0" string="Group By"> -->
+                            <filter name="group_by_project" string="Project" context="{'group_by':'project_id'}"/>
+                            <filter name="group_by_category" string="Category" context="{'group_by':'category_id'}"/>
+                            <filter name="group_by_transport_trip" string="Transport/Trip" context="{'group_by':'transport_trip_id'}"/>
+                        <!-- </group> -->
+                </xpath>
+            </field>
+        </record>
+
+        <!-- when deploying to live/test environment this code below should be commented out because there is no sales_timesheet_enterprise-->
+
+        <record id="view_planning_slot_form_hide_task" model="ir.ui.view">
+            <field name="name">planning.slot.form.hide.task</field>
+            <field name="model">planning.slot</field>
+            <field name="inherit_id" ref="project_forecast.planning_slot_view_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='project_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+<!--                <xpath expr="//field[@name='task_id']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='planned_hours']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='forecast_hours']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
+            </field>
+        </record>
+
+
+
+<!--        <record id="view_task_form_inherit_planned_hours" model="ir.ui.view">-->
+<!--            <field name="name">project.task.form.inherit.planned.hours</field>-->
+<!--            <field name="model">project.task</field>-->
+<!--            <field name="inherit_id" ref="project.view_task_form2"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='project_id']" position="after">-->
+<!--                    <field name="planned_hours" widget="float_time" string="Planned Duration"/>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='date_deadline']" position="before">-->
+<!--                    <field name="task_starting_date"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <record id="view_task_form_inherit_planned_hours" model="ir.ui.view">-->
+<!--            <field name="name">project.task.form.inherit.planned.hours</field>-->
+<!--            <field name="model">project.task</field>-->
+<!--            <field name="inherit_id" ref="project.view_task_form2"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='project_id']" position="after">-->
+<!--                    <field name="planned_hours" widget="float" string="Planned Duration in Hours"/>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='date_deadline']" position="before">-->
+<!--                    <field name="task_starting_date"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <record id="view_task_form_inherit_leg_two" model="ir.ui.view">-->
+<!--            <field name="name">project.task.form.inherit.leg.two</field>-->
+<!--            <field name="model">project.task</field>-->
+<!--            <field name="inherit_id" ref="project.view_task_form2"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='planned_hours']" position="after">-->
+<!--                    <field name="job_rate_id"-->
+<!--                           options="{'no_create': True, 'no_open': True}"-->
+<!--                           placeholder="Select Resource (e.g. Machine Learning Engineer)"/>-->
+<!--                    <field name="assigned_employee_ids"-->
+<!--                           widget="many2many_tags"-->
+<!--                           options="{'no_create': True}"-->
+<!--                           placeholder="Assign employees..."/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+
+<!--        <record id="view_planning_slot_tree_inherit" model="ir.ui.view">-->
+<!--            <field name="name">planning.slot.tree.inherit</field>-->
+<!--            <field name="model">planning.slot</field>-->
+<!--            <field name="inherit_id" ref="planning.planning_view_tree"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                &lt;!&ndash; #  Use XPath to insert the project_id field after the description field &ndash;&gt;-->
+<!--                <xpath expr="//tree" position="inside">-->
+<!--                        <field name="employee_id" invisible="1"/>-->
+<!--                        <field name="project_id" string="Project"/>-->
+<!--                        <field name="task_id"/>-->
+<!--                        <field name="progress" readonly="1"/>-->
+<!--                        &lt;!&ndash; <field name="training_id"/> &ndash;&gt;-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+        <record id="view_task_form_inherit_profitability_fields" model="ir.ui.view">
+            <field name="name">project.task.form.inherit.profitability.fields</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//field[@name='project_id']" position="after">
+                        <field name="job_rate_id"
+                               options="{'no_create': True, 'no_open': True}"
+                               placeholder="Select Resource (e.g. Machine Learning Engineer)"/>
+                        <field name="assigned_employee_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"
+                               placeholder="Assign employees..."/>
+                    </xpath>
+
+                    <xpath expr="//field[@name='user_id'] | //field[@name='user_ids'] | //field[@name='assignees_ids']" position="attributes">
+                        <attribute name="invisible">1</attribute>
+                    </xpath>
+
+                    <xpath expr="//field[@name='date_deadline']" position="before">
+                        <field name="task_starting_date"/>
+                    </xpath>
+
+                    <xpath expr="//field[@name='date_deadline']" position="after">
+                        <field name="planned_hours" widget="float" string="Planned Duration in Hours"/>
+                    </xpath>
+                </data>
+            </field>
+        </record>
+
+        <!-- Search View for Project Planning Enhancement and Extension     -->
+        <record id="view_planning_slot_search_inherit" model="ir.ui.view">
+            <field name="name">planning.slot.search.inherit</field>
+            <field name="model">planning.slot</field>
+            <field name="inherit_id" ref="planning.planning_view_search"/> <!-- Reference the original search view -->
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                    <field name="project_id" string="Project" />
+                    <field name="task_id" string="Task" />
+                    <!-- A view to filter by group -->
+                    <group expand="0" string="Group By">
+                        <filter name="group_by_project" string="Project" context="{'group_by':'project_id'}"/>
+                        <filter name="group_by_task" string="Task" context="{'group_by':'task_id'}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+<!--        <record id="view_planning_slot_form_inherit" model="ir.ui.view">-->
+<!--            <field name="name">planning.slot.form.inherit</field>-->
+<!--            <field name="model">planning.slot</field>-->
+<!--            <field name="inherit_id" ref="planning.planning_view_form"/>-->
+<!--            <field name="priority" eval="9999"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                &lt;!&ndash; Use XPath to insert the project_id field after the description field &ndash;&gt;-->
+<!--                <xpath expr="//sheet/group" position="inside">-->
+<!--&lt;!&ndash;                    <group>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <field name="task_id" options="{'no_create': False}" context="{'default_project_id': project_id}"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <field name="progress" string="Progress (%)"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </group>&ndash;&gt;-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <!-- Form View for Transport/Trip Approval Enhancement and Extension-->
+        <record id="view_approval_request_form_inherit" model="ir.ui.view">
+            <field name="name">approval.request.form.inherit</field>
+            <field name="model">approval.request</field>
+            <field name="inherit_id" ref="approvals.approval_request_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group" position="inside">
+                    <group>
+                        <field name="account_id"/>
+                        <field name="project_id" string="Project" />
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Tree or List View for Transport/Trip Approval Enhancement and Extension-->
+        <record id="view_approval_request_tree_inherit" model="ir.ui.view">
+            <field name="name">approval.request.tree.inherit</field>
+            <field name="model">approval.request</field>
+            <field name="inherit_id" ref="approvals.approval_request_view_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="inside">
+                        <field name="account_id"/>
+                        <field name="project_id"/>
+
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Search View for Transport/Trip Approval Enhancement and Extension-->
+        <record id="view_approval_request_search_inherit" model="ir.ui.view">
+            <field name="name">approval.request.search.inherit</field>
+            <field name="model">approval.request</field>
+            <field name="inherit_id" ref="approvals.approval_search_view_search"/> <!-- Reference the original search view -->
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                    <field name="project_id" string="Project" />
+
+                    <!-- A view to filter by group -->
+                    <group expand="0" string="Group By">
+                        <filter name="group_by_project" string="Project" context="{'group_by':'project_id'}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- This adds approval Request as a menu under the accounting module -->
+        <record id="action_approval_requests" model="ir.actions.act_window">
+            <field name="name">Approval Requests</field>
+            <field name="res_model">approval.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    <!-- Click to create a new approval request. -->
+                </p>
+            </field>
+        </record>
+
+
+        <record id="remove_expense_groups" model="ir.ui.view">
+            <field name="name">project.project.form.inherit</field>
+            <field name="model">project.project</field>
+            <!-- MUST BE ref -->
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <!-- Remove Expenses Group -->
+                <xpath expr="//group[field[@name='expense_ids']]" position="replace">
+                </xpath>
+                <!-- Remove Budget Group -->
+                <xpath expr="//group[field[@name='budget']]" position="replace">
+                </xpath>
+            </field>
+        </record>
+
+
+        <menuitem id="menu_approval_in_accounting"
+                name="Approvals"
+                parent="account.menu_finance_entries_actions"
+                action="action_approval_requests"
+                sequence="30"/>
+    </data>
+</odoo>

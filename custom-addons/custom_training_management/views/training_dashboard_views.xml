@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- People Services Dashboard - Pivot View -->
+    <record id="view_training_dashboard_pivot" model="ir.ui.view">
+        <field name="name">training.dashboard.pivot</field>
+        <field name="model">training.attendee</field>
+        <field name="arch" type="xml">
+            <pivot string="Training Analysis">
+                <field name="state" type="row"/>
+                <field name="department_id" type="col"/>
+                <field name="course_id" type="row"/>
+                <field name="employee_id" type="row"/>
+                <field name="assignment_type" type="col"/>
+                <field name="certificate_uploaded" type="col"/>
+                <field name="training_code" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View for Completion Rates -->
+    <record id="view_training_dashboard_graph" model="ir.ui.view">
+        <field name="name">training.dashboard.graph</field>
+        <field name="model">training.attendee</field>
+        <field name="arch" type="xml">
+            <graph string="Training Completion">
+                <field name="department_id" type="row"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Cohort View for Training Over Time - FIXED -->
+<!--    <record id="view_training_dashboard_cohort" model="ir.ui.view">-->
+<!--        <field name="name">training.dashboard.cohort</field>-->
+<!--        <field name="model">training.attendee</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <cohort string="Training Completion by Department"-->
+<!--                    date_start="date_start"-->
+<!--                    date_stop="date_completed"-->
+<!--                    interval="month">-->
+<!--                <field name="department_id"/>-->
+<!--                <field name="__count" type="measure"/>-->
+
+<!--            </cohort>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <!-- Optional: Additional cohort view for training codes -->
+<!--    <record id="view_training_dashboard_cohort_code" model="ir.ui.view">-->
+<!--        <field name="name">training.dashboard.cohort.code</field>-->
+<!--        <field name="model">training.attendee</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <cohort string="Training Completion by Course Code"-->
+<!--                    date_start="date_start"-->
+<!--                    date_stop="date_completed"-->
+<!--                    interval="month">-->
+<!--                <field name="training_code"/>-->
+<!--                <field name="__count" type="measure"/>-->
+<!--            </cohort>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <!-- Dashboard Action -->
+    <record id="action_training_dashboard" model="ir.actions.act_window">
+        <field name="name">Training Dashboard</field>
+        <field name="res_model">training.attendee</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+</odoo>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_training_payment_tree" model="ir.ui.view">
+        <field name="name">training.payment.tree</field>
+        <field name="model">training.payment</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="display_name"/>
+                <field name="course_id"/>
+                <field name="employee_id"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>                <field name="amount"/>
+                <field name="payment_date"/>
+                <field name="payment_method"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'paid'"
+                       decoration-warning="state == 'draft'"
+                       decoration-danger="state in ('cancelled','refunded')"/>
+                <field name="payment_reference"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View - Simplified -->
+    <record id="view_training_payment_form" model="ir.ui.view">
+        <field name="name">training.payment.form</field>
+        <field name="model">training.payment</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm_payment" type="object" string="Confirm Payment" class="btn-success"
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="action_cancel" type="object" string="Cancel/Refund" class="btn-secondary"
+                            attrs="{'invisible': [('state', 'in', ('cancelled','refunded'))]}"/>
+                    <button name="action_set_to_draft" type="object" string="Reset to Draft" class="btn-primary"
+                            attrs="{'invisible': [('state', 'not in', ('cancelled','refunded'))]}"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="course_id" options="{'no_create': True}"/>
+                            <field name="attendee_id"
+                                   domain="[('course_id', '=', course_id)]"
+                                   options="{'no_create': True}"/>
+                            <field name="employee_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="payment_date"/>
+                            <field name="payment_method"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="payment_provider"/>
+                            <field name="payment_reference"/>
+                            <field name="transaction_id"/>
+                        </group>
+                        <group>
+                            <field name="notes" nolabel="1" placeholder="Add notes here..."/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_training_payment_search" model="ir.ui.view">
+        <field name="name">training.payment.search</field>
+        <field name="model">training.payment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="display_name"/>
+                <field name="course_id"/>
+                <field name="employee_id"/>
+                <field name="payment_reference"/>
+                <field name="transaction_id"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                <separator/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                <filter name="group_method" string="Payment Method" context="{'group_by': 'payment_method'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_training_payment" model="ir.actions.act_window">
+        <field name="name">Training Payments</field>
+        <field name="res_model">training.payment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Record your first training payment!
+            </p>
+            <p>
+                Track payments for paid trainings. No accounting complexity - just simple payment tracking.
+            </p>
+        </field>
+    </record>
+
+    <!-- Add payment section to training form - FIXED VERSION -->
+    <record id="view_training_course_form_inherit_payment" model="ir.ui.view">
+        <field name="name">training.course.form.inherit.payment</field>
+        <field name="model">training.course</field>
+        <field name="inherit_id" ref="view_training_course_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add invisible field for is_paid - REQUIRED for attrs -->
+            <xpath expr="//sheet" position="inside">
+                <field name="is_paid" invisible="1"/>
+            </xpath>
+
+            <!-- Add payment fields before notebook -->
+            <xpath expr="//notebook" position="before">
+                <group attrs="{'invisible': [('is_paid', '=', False)]}">
+                    <separator string="Payment Information" colspan="2"/>
+                    <field name="currency_id" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="training_fee" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="payment_required_before"/>
+                        </group>
+                        <group>
+                            <field name="total_paid" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_outstanding" widget="monetary" options="{'currency_field': 'currency_id'}"
+                                   attrs="{'invisible': [('total_outstanding', '=', 0)]}"/>
+                        </group>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Add payments page inside notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Payments" name="payments" attrs="{'invisible': [('is_paid', '=', False)]}">
+                    <group>
+                        <field name="payment_ids">
+                            <tree>
+                                <field name="display_name"/>
+                                <field name="currency_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="payment_date"/>
+                                <field name="payment_method"/>
+                                <field name="state" widget="badge"/>
+                                <field name="payment_reference"/>
+                            </tree>
+                        </field>
+                        <div class="text-muted small">
+                            <i class="fa fa-info-circle"/>
+                            Total Paid: <field name="total_paid"/> | Outstanding: <field name="total_outstanding"/>
+                        </div>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,172 @@
+<odoo>
+    <record id="view_daily_activity_form" model="ir.ui.view">
+        <field name="name">employee.daily.activity.form</field>
+        <field name="model">employee.daily.activity</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirm"
+                            class="btn-primary"
+                            attrs="{'invisible':[('state','=','confirmed')]}"/>
+
+                    <button name="action_mark_draft"
+                        string="Mark as Draft"
+                        type="object"
+                        states="confirmed"
+                        class="btn-secondary"/>
+        
+                    <field name="state" widget="statusbar"/>
+                </header>
+
+                <sheet>
+                <field name="res_model" invisible="1"/>
+                <field name="activity_res_model" invisible="1"/>
+
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="parent_id" readonly="1"/>
+                            <field name="team_lead_id" readonly="1"/>
+                            <field name="employee_type"/>
+                            <field name="custom_activity_type_id"/>
+                            <field name="activity_name" readonly="1"/>
+                            <!-- Technical Support -->
+                            <field name="helpdesk_ticket_id"
+                                attrs="{'invisible':[('activity_res_model','!=','helpdesk.ticket')]}"/>
+
+                            <!-- Technical Project -->
+                            <field name="project_id"
+                                   attrs="{
+                                       'invisible':[('activity_res_model','!=','project.project')],
+                                       'readonly':[('activity_res_model','!=','project.project')]
+                                   }"/>
+<!--                            <field name="project_id"-->
+<!--                                   attrs="{'invisible': [('activity_res_model', '!=', 'project.project')]}"-->
+<!--                                   options="{'no_create': True, 'no_open': True}"/>-->
+                            <!-- Technical Pre-Sales -->
+                            <field name="crm_opportunity_id"
+                                attrs="{'invisible':[('activity_res_model','!=','crm.lead')]}"/>
+
+                            <field name="training_attendee_id"
+                                attrs="{'invisible':[('activity_res_model','!=','training.course')]}"/>
+
+                        </group>
+                        
+
+                        <group>
+                            <field name="start_datetime"/>
+                            <field name="end_datetime"/>
+                            <field name="time_spent_hours" widget="float_time" readonly="1"/>
+                            <field name="date" readonly="1"/>
+                            <field name="year" readonly="1"/>
+                            <field name="quarter" readonly="1"/>
+
+
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_daily_activity_tree" model="ir.ui.view">
+        <field name="name">employee.daily.activity.tree</field>
+        <field name="model">employee.daily.activity</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="employee_type"/>
+                <field name="activity_name"/>
+                <field name="description"/>
+                <field name="start_datetime"/>
+                <field name="end_datetime"/>
+                <field name="time_spent_hours"/>
+                <field name="date"/>
+                <field name="year"/>
+                <field name="quarter"/>
+                <field name="state"/>
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_daily_activity_search" model="ir.ui.view">
+        <field name="name">employee.daily.activity.search</field>
+        <field name="model">employee.daily.activity</field>
+        <field name="arch" type="xml">
+            <search string="Daily Activities">
+
+                <!-- Searchable Fields -->
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="date"/>
+                <field name="year"/>
+                <field name="quarter"/>
+                    <!-- Time-based Reporting -->
+                <filter string="Daily"
+                        name="daily"
+                        domain="[]"
+                        context="{'group_by':'date:day'}"/>
+
+                <filter string="Weekly"
+                        name="weekly"
+                        domain="[]"
+                        context="{'group_by':'date:week'}"/>
+
+                <filter string="Monthly"
+                        name="monthly"
+                        domain="[]"
+                        context="{'group_by':'date:month'}"/>
+
+                <filter string="Yearly"
+                        name="yearly"
+                        domain="[]"
+                        context="{'group_by':'date:year'}"/>
+
+
+                <filter string="Q1"
+                        name="q1"
+                        domain="[('quarter','=','q1')]"/>
+
+                <filter string="Q2"
+                        name="q2"
+                        domain="[('quarter','=','q2')]"/>
+
+                <filter string="Q3"
+                        name="q3"
+                        domain="[('quarter','=','q3')]"/>
+
+                <filter string="Q4"
+                        name="q4"
+                        domain="[('quarter','=','q4')]"/>
+
+                <!-- Group By -->
+                <filter string="Group by Employee"
+                        name="group_by_employee"
+                        context="{'group_by':'employee_id'}"/>
+
+                <filter string="Group by Department"
+                        name="group_by_department"
+                        context="{'group_by':'department_id'}"/>
+
+                <filter string="Group by Year"
+                        name="group_by_year"
+                        context="{'group_by':'year'}"/>
+
+                <filter string="Group by Quarter"
+                        name="group_by_quarter"
+                        context="{'group_by':'quarter'}"/>
+
+            </search>
+        </field>
+    </record>
+
+</odoo>
