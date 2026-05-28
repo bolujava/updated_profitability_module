@@ -1,51 +1,20 @@
-# -*- coding: utf-8 -*-
 from odoo import models, fields, api
-import logging
-
-_logger = logging.getLogger(__name__)
-
-
-class ProjectTaskLegTwo(models.Model):
-    _inherit = 'project.task'
-
-    @api.depends('project_id.sale_order_id', 'job_rate_id')
-    def _compute_sale_line_id(self):
-        for task in self:
-            if task.project_id and task.project_id.sale_order_id and task.job_rate_id:
-
-                matching_so_line = task.project_id.sale_order_id.order_line.filtered(
-                    lambda l: l.product_id == task.job_rate_id.product_id and not l.display_type
-                )
-
-                if matching_so_line:
-                    task.sale_line_id = matching_so_line[0].id
-                    task.sale_order_id = task.project_id.sale_order_id.id
-                    _logger.info("Leg 2 Match Found: Task '%s' matched to SO Line ID %s", task.name,
-                                 matching_so_line[0].id)
-                    continue
-
-            if task.project_id and getattr(task.project_id, 'sale_line_id', False):
-                task.sale_line_id = task.project_id.sale_line_id.id
-                task.sale_order_id = task.project_id.sale_order_id.id
-            else:
-                task.sale_line_id = False
-                task.sale_order_id = False
-
-
 
 
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
+    # ─────────────────────────────────────────────
+    # YOUR FIELDS
+    # ─────────────────────────────────────────────
     timesheet_cost = fields.Float(string="Timesheet Cost")
 
     timesheet_ids = fields.One2many(
-        'account.analytic.line',
-        'employee_id',
+        'account.analytic.line', 
+        'employee_id', 
         string="Timesheets"
     )
 
-    # FIXED: Added the required @api.depends decorator below to fix the DB crash
     profitability_score = fields.Float(
         string="Performance Efficiency (%)",
         compute="_compute_profitability_score",
@@ -88,11 +57,12 @@ class HrEmployee(models.Model):
         store=True
     )
 
-    @api.depends('timesheet_ids.unit_amount', 'timesheet_ids.sale_line_id.product_uom_qty')
+    # ─────────────────────────────────────────────
+    # YOUR EFFICIENCY COMPUTE METHOD
+    # ─────────────────────────────────────────────
     def _compute_profitability_score(self):
         for emp in self:
-            # OPTIMIZED: Pull from RAM cache instead of executing heavy SQL searches in a loop
-            timesheets = emp.timesheet_ids
+            timesheets = self.env['account.analytic.line'].search([('employee_id', '=', emp.id)])
             total_score = 0.0
             total_sale_lines = set()
 
@@ -100,12 +70,10 @@ class HrEmployee(models.Model):
                 sale_line = ts.sale_line_id
                 if sale_line and sale_line.product_uom_qty:
                     planned_hours = sale_line.product_uom_qty
-
-                    # OPTIMIZED: Filter in memory
-                    total_task_hours = sum(timesheets.filtered(
-                        lambda t: t.sale_line_id.id == sale_line.id
-                    ).mapped('unit_amount'))
-
+                    total_task_hours = sum(self.env['account.analytic.line'].search([
+                        ('sale_line_id', '=', sale_line.id),
+                        ('employee_id', '=', emp.id),
+                    ]).mapped('unit_amount'))
                     total_score += (total_task_hours / planned_hours) * 100
                     total_sale_lines.add(sale_line.id)
 
@@ -130,8 +98,9 @@ class HrEmployee(models.Model):
                 if task_id:
                     task = self.env['project.task'].browse(task_id)
                     if not task.job_rate_id:
-                        continue
+                        continue # Skip calculation until they pick a Job Rate
 
+            # Initialize all values to 0
             emp.total_hours = 0.0
             emp.selling_price_per_hour = 0.0
             emp.cost_per_hour = 0.0
@@ -140,8 +109,10 @@ class HrEmployee(models.Model):
             emp.total_profit = 0.0
             emp.profit_margin = 0.0
 
-            # OPTIMIZED: Use the preloaded field relation instead of doing a search
-            timesheets = emp.timesheet_ids
+            # Get all timesheets for this employee
+            timesheets = self.env['account.analytic.line'].search([
+                ('employee_id', '=', emp.id)
+            ])
 
             if not timesheets:
                 continue
@@ -150,9 +121,11 @@ class HrEmployee(models.Model):
             total_cost = 0.0
             total_revenue = 0.0
 
+            # Calculate costs and revenues
             for ts in timesheets:
                 hours = ts.unit_amount or 0.0
 
+                # Cost calculation - use task job rate or employee timesheet cost
                 if ts.task_id and ts.task_id.job_rate_id:
                     cost_rate = ts.task_id.job_rate_id.cost_rate or 0.0
                 else:
@@ -160,6 +133,7 @@ class HrEmployee(models.Model):
 
                 total_cost += hours * cost_rate
 
+                # Revenue calculation - use sale line or task job rate
                 if ts.sale_line_id and ts.sale_line_id.product_uom_qty:
                     so_line = ts.sale_line_id
                     if so_line.product_uom_qty > 0:
@@ -169,6 +143,7 @@ class HrEmployee(models.Model):
                     revenue_rate = ts.task_id.job_rate_id.selling_rate or ts.task_id.job_rate_id.hourly_rate or 0.0
                     total_revenue += hours * revenue_rate
 
+            # Calculate averages and final values
             avg_cost_rate = total_cost / total_hours if total_hours > 0 else 0.0
             avg_revenue_rate = total_revenue / total_hours if total_hours > 0 else 0.0
             total_profit = total_revenue - total_cost
@@ -181,15 +156,3 @@ class HrEmployee(models.Model):
             emp.total_cost = total_cost
             emp.total_profit = total_profit
             emp.profit_margin = profit_margin
-
-
-
-class ProjectProject(models.Model):
-    _inherit = 'project.project'
-
-    @api.onchange('department_id')
-    def _onchange_department_ui_update(self):
-        if self.department_id:
-            self.team_lead_id = self.department_id.team_lead_id
-        else:
-            self.team_lead_id = False

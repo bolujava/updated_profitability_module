@@ -275,7 +275,7 @@
 #                 employee.team_lead_id = hr_employee.team_lead_id
 #             else:
 #                 employee.team_lead_id = False
-#
+
 #
 # -*- coding: utf-8 -*-
 import logging
