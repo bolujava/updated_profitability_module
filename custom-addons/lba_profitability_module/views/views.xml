@@ -7,7 +7,6 @@
             <field name="domain">[('project_id', '=', active_id)]</field>
         </record>
 
-        <!-- Decline Role Wizard Form View -->
         <record id="view_decline_role_wizard_form" model="ir.ui.view">
             <field name="name">decline.role.wizard.form</field>
             <field name="model">decline.role.wizard</field>
@@ -29,7 +28,6 @@
                         </group>
                     </sheet>
                     <footer>
-                        <!-- Decline Role Button with Red Color (btn-danger) -->
                         <button string="Decline Role"
                                 type="object"
                                 name="action_decline_role"
@@ -76,19 +74,74 @@
         </record>
 
         <!-- views/sale_order_views.xml -->
+<!--        <record id="view_order_form_project_title" model="ir.ui.view">-->
+<!--            <field name="name">sale.order.form.project.title</field>-->
+<!--            <field name="model">sale.order</field>-->
+<!--            <field name="inherit_id" ref="sale.view_order_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='partner_id']" position="after">-->
+<!--                    <field name="project_title"-->
+<!--                           string="Project Title"-->
+<!--                           placeholder="Leave blank → uses SO001 - Client Name"-->
+<!--                           class="oe_inline" invisible="1"/>-->
+<!--                    <field name="project_document_link"-->
+<!--                           widget="url"-->
+<!--                           placeholder="Paste Microsoft Teams channel link for project documents..."/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
         <record id="view_order_form_project_title" model="ir.ui.view">
             <field name="name">sale.order.form.project.title</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
+
                 <xpath expr="//field[@name='partner_id']" position="after">
-                    <field name="project_title"
-                           string="Project Title"
-                           placeholder="Leave blank → uses SO001 - Client Name"
-                           class="oe_inline" invisible="1"/>
+
+                    <!-- Project Reference (NEW CLEAN VERSION) -->
+                    <field name="project_id"
+                           readonly="1"
+                           string="Related Project"/>
+
+                    <!-- Teams / Document Link -->
                     <field name="project_document_link"
                            widget="url"
                            placeholder="Paste Microsoft Teams channel link for project documents..."/>
+
+                </xpath>
+
+                <!-- Add a proper collaboration page -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Sales Handover">
+
+                        <group>
+                            <field name="sales_handover_note"
+                                   widget="html"
+                                   placeholder="Enter project handover details, scope, client expectations..."/>
+                        </group>
+
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+        <record id="view_order_form_dedicated_attachments" model="ir.ui.view">
+            <field name="name">sale.order.form.dedicated.attachments</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Documents" name="documents_page">
+                        <group string="Project Documents">
+                            <field name="project_attachments"
+                                   widget="many2many_binary"
+                                   string="Upload Documents"
+                                   help="Upload project-related documents here. They will automatically sync to the project when confirmed."/>
+                            <div class="alert alert-info" role="alert" style="margin-top: 10px;">
+                                <i class="fa fa-info-circle"/> Documents attached here will be automatically copied to the project when this sales order is confirmed.
+                            </div>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -148,7 +201,6 @@
                             class="btn-primary"
                             attrs="{'invisible': [('can_accept_department_manager', '=', False)]}"/>
 
-                    <!-- Decline Department Manager Role -->
                     <button name="%(action_decline_role_wizard)d"
                             string="Decline Department Manager Role"
                             type="action"
@@ -173,13 +225,11 @@
                     <field name="can_edit_department_manager" invisible="1"/>
                 </xpath>
 
-                <!-- Replace 'user_id' with 'project_manager' -->
                 <xpath expr="//field[@name='user_id']" position="replace">
                     <field name="project_manager" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
                     <field name="can_accept_project_manager" invisible="1"/>
                     <field name="starting_date" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
                     <field name="ending_date" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
-                    <!-- <field name="ending_date" attrs="{'readonly': ['|', ('is_edit_mode', '=', False), ('can_edit_project_manager', '=', False)]}"/> -->
                 </xpath>
                 <xpath expr="//sheet/notebook" position="inside">
                     <page name="profitability" string="Profitability">
@@ -256,7 +306,6 @@
 
                     </page>
                 </xpath>
-                <!-- Modify the settings page and add a new group with custom fields -->
                 <xpath expr="//page[@name='settings']" position="inside">
                     <group string="Department Information" >
                         <field name="department_id" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
@@ -268,14 +317,11 @@
                         <field name="status" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
                     </group>
 
-                    <!-- Expenses Group with One2many field -->
                     <group string="Expenses" colspan="5">
                         <field name="expense_ids" widget="one2many" options="{'no_create': True}"/>
                     </group>
 
-                    <!-- Budget Monitoring and Profitability Group -->
                     <group string="Budget Monitoring and Profitability">
-                        <!-- <field name ="is_edit_mode" invisible = "1"/> -->
                         <field name="budget" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
                         <field name="budget_utilized" readonly="1"/>
                         <field name="budget_remaining" readonly="1"/>
@@ -304,18 +350,15 @@
             </field>
         </record>
 
-        <!-- Inherit the existing project tree view -->
         <record id="view_project_project_tree_inherit" model="ir.ui.view">
             <field name="name">project.project.tree.inherit</field>
             <field name="model">project.project</field>
             <field name="inherit_id" ref="project.view_project"/>
             <field name="arch" type="xml">
-                <!-- Disable the Create button in the Tree view -->
                 <xpath expr="//tree" position="attributes">
                     <attribute name="create">false</attribute>
                 </xpath>
 
-                <!-- Replace 'user_id' field with 'project_manager' -->
                 <xpath expr="//field[@name='user_id']" position="replace">
                     <field name="project_manager"/>
                 </xpath>
@@ -449,68 +492,6 @@
         </record>
 
 
-
-<!--        <record id="view_task_form_inherit_planned_hours" model="ir.ui.view">-->
-<!--            <field name="name">project.task.form.inherit.planned.hours</field>-->
-<!--            <field name="model">project.task</field>-->
-<!--            <field name="inherit_id" ref="project.view_task_form2"/>-->
-<!--            <field name="arch" type="xml">-->
-<!--                <xpath expr="//field[@name='project_id']" position="after">-->
-<!--                    <field name="planned_hours" widget="float_time" string="Planned Duration"/>-->
-<!--                </xpath>-->
-<!--                <xpath expr="//field[@name='date_deadline']" position="before">-->
-<!--                    <field name="task_starting_date"/>-->
-<!--                </xpath>-->
-<!--            </field>-->
-<!--        </record>-->
-
-<!--        <record id="view_task_form_inherit_planned_hours" model="ir.ui.view">-->
-<!--            <field name="name">project.task.form.inherit.planned.hours</field>-->
-<!--            <field name="model">project.task</field>-->
-<!--            <field name="inherit_id" ref="project.view_task_form2"/>-->
-<!--            <field name="arch" type="xml">-->
-<!--                <xpath expr="//field[@name='project_id']" position="after">-->
-<!--                    <field name="planned_hours" widget="float" string="Planned Duration in Hours"/>-->
-<!--                </xpath>-->
-<!--                <xpath expr="//field[@name='date_deadline']" position="before">-->
-<!--                    <field name="task_starting_date"/>-->
-<!--                </xpath>-->
-<!--            </field>-->
-<!--        </record>-->
-
-<!--        <record id="view_task_form_inherit_leg_two" model="ir.ui.view">-->
-<!--            <field name="name">project.task.form.inherit.leg.two</field>-->
-<!--            <field name="model">project.task</field>-->
-<!--            <field name="inherit_id" ref="project.view_task_form2"/>-->
-<!--            <field name="arch" type="xml">-->
-<!--                <xpath expr="//field[@name='planned_hours']" position="after">-->
-<!--                    <field name="job_rate_id"-->
-<!--                           options="{'no_create': True, 'no_open': True}"-->
-<!--                           placeholder="Select Resource (e.g. Machine Learning Engineer)"/>-->
-<!--                    <field name="assigned_employee_ids"-->
-<!--                           widget="many2many_tags"-->
-<!--                           options="{'no_create': True}"-->
-<!--                           placeholder="Assign employees..."/>-->
-<!--                </xpath>-->
-<!--            </field>-->
-<!--        </record>-->
-
-
-<!--        <record id="view_planning_slot_tree_inherit" model="ir.ui.view">-->
-<!--            <field name="name">planning.slot.tree.inherit</field>-->
-<!--            <field name="model">planning.slot</field>-->
-<!--            <field name="inherit_id" ref="planning.planning_view_tree"/>-->
-<!--            <field name="arch" type="xml">-->
-<!--                &lt;!&ndash; #  Use XPath to insert the project_id field after the description field &ndash;&gt;-->
-<!--                <xpath expr="//tree" position="inside">-->
-<!--                        <field name="employee_id" invisible="1"/>-->
-<!--                        <field name="project_id" string="Project"/>-->
-<!--                        <field name="task_id"/>-->
-<!--                        <field name="progress" readonly="1"/>-->
-<!--                        &lt;!&ndash; <field name="training_id"/> &ndash;&gt;-->
-<!--                </xpath>-->
-<!--            </field>-->
-<!--        </record>-->
         <record id="view_task_form_inherit_profitability_fields" model="ir.ui.view">
             <field name="name">project.task.form.inherit.profitability.fields</field>
             <field name="model">project.task</field>
@@ -542,7 +523,6 @@
             </field>
         </record>
 
-        <!-- Search View for Project Planning Enhancement and Extension     -->
         <record id="view_planning_slot_search_inherit" model="ir.ui.view">
             <field name="name">planning.slot.search.inherit</field>
             <field name="model">planning.slot</field>
@@ -557,6 +537,51 @@
                         <filter name="group_by_task" string="Task" context="{'group_by':'task_id'}"/>
                     </group>
                 </xpath>
+            </field>
+        </record>
+        <record id="view_task_form_inherit_import" model="ir.ui.view">
+            <field name="name">project.task.form.inherit.import</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="assigned_employee_import" invisible="1"/>
+                    <field name="job_rate_import" invisible="1"/>
+                    <field name="task_starting_date_import" invisible="1"/>
+                    <field name="date_deadline_import" invisible="1"/>
+                    <field name="description_import" invisible="1"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- Inherit the task tree view to add import helper fields -->
+        <record id="view_task_tree_inherit_import" model="ir.ui.view">
+            <field name="name">project.task.tree.inherit.import</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_tree2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="inside">
+                    <field name="assigned_employee_import" optional="hide"/>
+                    <field name="job_rate_import" optional="hide"/>
+                    <field name="task_starting_date_import" optional="hide"/>
+                    <field name="date_deadline_import" optional="hide"/>
+                    <field name="description_import" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_task_search_inherit_import" model="ir.ui.view">
+            <field name="name">project.task.search.inherit.import</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_search_form"/>
+            <field name="arch" type="xml">
+                <search position="inside">
+                    <field name="assigned_employee_import" invisible="1"/>
+                    <field name="job_rate_import" invisible="1"/>
+                    <field name="task_starting_date_import" invisible="1"/>
+                    <field name="date_deadline_import" invisible="1"/>
+                    <field name="description_import" invisible="1"/>
+                </search>
             </field>
         </record>
 
@@ -576,6 +601,30 @@
 <!--            </field>-->
 <!--        </record>-->
 
+
+        <record id="view_project_project_form_description_inherited" model="ir.ui.view">
+            <field name="name">project.project.form.description.inherit.sales.handover</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/notebook/page[@name='description_page']/field[@name='description']"
+                       position="after">
+                    <div style="margin-top:20px; padding:15px; background-color:#f8f9fa; border:1px solid #e0e0e0; border-radius:5px;">
+                        <h4 style="color:#7159c1; margin-bottom:8px;">
+                            <i class="fa fa-handshake-o"/>
+                            Sales Handover Note
+                        </h4>
+                        <field name="sales_handover_note"
+                               readonly="1"
+                               placeholder="No handover note from sales team"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+
+
+
         <!-- Form View for Transport/Trip Approval Enhancement and Extension-->
         <record id="view_approval_request_form_inherit" model="ir.ui.view">
             <field name="name">approval.request.form.inherit</field>
@@ -591,7 +640,26 @@
             </field>
         </record>
 
-        <!-- Tree or List View for Transport/Trip Approval Enhancement and Extension-->
+        <record id="view_project_project_form_attachments" model="ir.ui.view">
+            <field name="name">project.project.form.attachments</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Sales Documents" name="sales_documents" attrs="{'invisible': [('sale_order_id', '=', False)]}">
+                        <group string="Documents from Sales Order">
+                            <field name="sale_attachment_ids"
+                                   widget="many2many_binary"
+                                   string="Attachments"
+                                   readonly="1"
+                                   help="Documents attached to the original Sales Order. These are synced automatically when the order is confirmed."/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+
         <record id="view_approval_request_tree_inherit" model="ir.ui.view">
             <field name="name">approval.request.tree.inherit</field>
             <field name="model">approval.request</field>
@@ -605,7 +673,6 @@
             </field>
         </record>
 
-        <!-- Search View for Transport/Trip Approval Enhancement and Extension-->
         <record id="view_approval_request_search_inherit" model="ir.ui.view">
             <field name="name">approval.request.search.inherit</field>
             <field name="model">approval.request</field>
@@ -614,7 +681,6 @@
                 <xpath expr="//search" position="inside">
                     <field name="project_id" string="Project" />
 
-                    <!-- A view to filter by group -->
                     <group expand="0" string="Group By">
                         <filter name="group_by_project" string="Project" context="{'group_by':'project_id'}"/>
                     </group>
@@ -622,14 +688,12 @@
             </field>
         </record>
 
-        <!-- This adds approval Request as a menu under the accounting module -->
         <record id="action_approval_requests" model="ir.actions.act_window">
             <field name="name">Approval Requests</field>
             <field name="res_model">approval.request</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    <!-- Click to create a new approval request. -->
                 </p>
             </field>
         </record>
@@ -638,13 +702,10 @@
         <record id="remove_expense_groups" model="ir.ui.view">
             <field name="name">project.project.form.inherit</field>
             <field name="model">project.project</field>
-            <!-- MUST BE ref -->
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
-                <!-- Remove Expenses Group -->
                 <xpath expr="//group[field[@name='expense_ids']]" position="replace">
                 </xpath>
-                <!-- Remove Budget Group -->
                 <xpath expr="//group[field[@name='budget']]" position="replace">
                 </xpath>
             </field>

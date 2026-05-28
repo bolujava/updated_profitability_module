@@ -41,10 +41,7 @@ class ProjectEnhancement(models.Model):
 
     @api.depends('task_ids.progress')
     def _compute_project_progress(self):
-        """Calculates the project's overall progress by averaging the progress of all associated tasks."""
         for project in self:
-            # Filter for tasks that have a progress value to be included in the average.
-            # You might adjust this filter based on task stages you want to exclude (e.g., cancelled).
             tasks = project.task_ids.filtered(lambda t: t.progress > 0.0 or t.stage_id.fold is False)
 
             if tasks:
@@ -54,7 +51,7 @@ class ProjectEnhancement(models.Model):
             else:
                 project.project_progress = 0.0
 
-    @api.depends('date_start', 'date')  # <-- CORRECTED: Now depends on 'date_start' and 'date'
+    @api.depends('date_start', 'date')
     def _compute_allocated_hours(self):
         for project in self:
             allocated_hours = 0.0
@@ -74,14 +71,12 @@ class ProjectEnhancement(models.Model):
 
             project.allocated_hours = allocated_hours
 
-    # You may also want to update your date constraint to use the correct fields:
     @api.constrains('date_start', 'date')
     def _check_dates(self):
         for rec in self:
             if rec.date_start and rec.date and rec.date_start > rec.date:
                 raise ValidationError("End Date must be after Start Date.")
 
-    # This is what I have
 
     starting_date = fields.Date(string="Starting Date")
     ending_date = fields.Date(string="Ending Date")
@@ -114,15 +109,12 @@ class ProjectEnhancement(models.Model):
         'res.users', compute="_compute_current_user", store=False
     )
 
-    # Budget Fields
-    # currency_id = fields.Many2one('res.currency', related='company_id.currency_id', store=True)
     currency_id = fields.Many2one(
         'res.currency',
         string='Currency',
         default=lambda self: self.env.company.currency_id.id,
-        readonly=True  # Or set based on project configuration
+        readonly=True
     )
-    # currency_symbol = fields.Char(related='currency_id.symbol')
 
     budget = fields.Monetary(
         string='Budget',
@@ -159,9 +151,7 @@ class ProjectEnhancement(models.Model):
         help="Visual indicator for how the project is tracking against its budget."
     )
 
-    # NEW: Fixed write method - REPLACE your existing write method with this one
     def write(self, vals):
-        # Capture existing values BEFORE the write
         old_values = {}
         for rec in self:
             old_values[rec.id] = {
@@ -171,14 +161,11 @@ class ProjectEnhancement(models.Model):
                 'team_lead_id': rec.team_lead_id.id if rec.team_lead_id else False,
             }
             _logger.info(
-                f"📋 OLD VALUES for '{rec.name}': PM={old_values[rec.id]['project_manager']}, Dept={old_values[rec.id]['department_id']}, DeptMgr={old_values[rec.id]['department_manager_id']}, TeamLead={old_values[rec.id]['team_lead_id']}")
+                f"OLD VALUES for '{rec.name}': PM={old_values[rec.id]['project_manager']}, Dept={old_values[rec.id]['department_id']}, DeptMgr={old_values[rec.id]['department_manager_id']}, TeamLead={old_values[rec.id]['team_lead_id']}")
 
-        # Execute the write operation
         res = super(ProjectEnhancement, self).write(vals)
 
-        # Send notifications for changes AFTER the write
         for rec in self:
-            # Refresh to get computed values
             rec.refresh()
 
             old = old_values.get(rec.id, {})
@@ -189,11 +176,10 @@ class ProjectEnhancement(models.Model):
             new_team_lead = rec.team_lead_id.id if rec.team_lead_id else False
 
             _logger.info(
-                f"📋 NEW VALUES for '{rec.name}': PM={new_pm}, Dept={new_dept_id}, DeptMgr={new_dept_mgr}, TeamLead={new_team_lead}")
+                f"NEW VALUES for '{rec.name}': PM={new_pm}, Dept={new_dept_id}, DeptMgr={new_dept_mgr}, TeamLead={new_team_lead}")
 
-            # 1. Check Project Manager
             if new_pm != old.get('project_manager'):
-                _logger.info(f"🎯 Project Manager CHANGED!")
+                _logger.info(f"Project Manager CHANGED!")
                 if new_pm and rec.project_manager:
                     rec._send_role_assignment_notification('project_manager', rec.project_manager)
 
@@ -203,23 +189,76 @@ class ProjectEnhancement(models.Model):
 
             if dept_changed or dept_mgr_changed:
                 _logger.info(
-                    f"🎯 Department Manager CHANGED! (Dept changed: {dept_changed}, Mgr changed: {dept_mgr_changed})")
+                    f"Department Manager CHANGED! (Dept changed: {dept_changed}, Mgr changed: {dept_mgr_changed})")
                 if new_dept_mgr and rec.department_manager_id:
                     rec._send_role_assignment_notification('department_manager', rec.department_manager_id)
 
             # 3. Check Team Lead
             if new_team_lead != old.get('team_lead_id'):
-                _logger.info(f"🎯 Team Lead CHANGED!")
+                _logger.info(f"Team Lead CHANGED!")
                 if new_team_lead and rec.team_lead_id:
                     rec._send_role_assignment_notification('team_lead', rec.team_lead_id)
 
         return res
 
-    # REPLACE your existing create method with this one
+    # @api.model
+    # def create(self, vals):
+    #     _logger.info("=" * 60)
+    #     _logger.info(f"🆕 CREATING NEW PROJECT")
+    #
+    #     if vals.get('sale_order_id'):
+    #         sale_order = self.env['sale.order'].browse(vals['sale_order_id'])
+    #         if sale_order.user_id:
+    #             vals['user_id'] = sale_order.user_id.id
+    #             _logger.info(f"✅ Auto-assigned sales rep {sale_order.user_id.name} as Project Administrator")
+    #
+    #     vals.setdefault('pmo', self._get_pmo())
+    #
+    #     if 'department_id' in vals:
+    #         department = self.env['hr.department'].browse(vals['department_id'])
+    #         vals['department_manager_id'] = department.manager_id.id if department.manager_id else False
+    #         _logger.info(f"Setting department_manager_id to: {vals['department_manager_id']}")
+    #
+    #     # Create the project instance natively
+    #     project = super().create(vals)
+    #     _logger.info(f"Project created: {project.name} (ID: {project.id})")
+    #
+    #     # Clean handover synchronization via dedicated method
+    #     if project.sale_order_id:
+    #         so = project.sale_order_id
+    #         project._sync_handover_data_from_so(so)
+    #
+    #     # All notifications remain perfectly intact below
+    #     _logger.info("📧 Sending role assignment notifications...")
+    #     if project.team_lead_id:
+    #         project.team_lead_status = 'pending'
+    #         project._send_role_assignment_notification('team_lead', project.team_lead_id)
+    #
+    #     if project.department_manager_id:
+    #         project.department_manager_status = 'pending'
+    #         project._send_role_assignment_notification('department_manager', project.department_manager_id)
+    #
+    #     if project.project_manager:
+    #         project.project_manager_status = 'pending'
+    #         project._send_role_assignment_notification('project_manager', project.project_manager)
+    #
+    #     # Send project creation email to PMO
+    #     if project.pmo:
+    #         self._send_project_creation_email(project)
+    #
+    #     _logger.info("=" * 60)
+    #     return project
+
     @api.model
     def create(self, vals):
         _logger.info("=" * 60)
-        _logger.info(f"🆕 CREATING NEW PROJECT")
+        _logger.info(f" CREATING NEW PROJECT")
+
+        if vals.get('sale_order_id'):
+            sale_order = self.env['sale.order'].browse(vals['sale_order_id'])
+            if sale_order.user_id:
+                vals['user_id'] = sale_order.user_id.id
+                _logger.info(f" Auto-assigned sales rep {sale_order.user_id.name} as Project Administrator")
 
         vals.setdefault('pmo', self._get_pmo())
 
@@ -228,16 +267,18 @@ class ProjectEnhancement(models.Model):
             vals['department_manager_id'] = department.manager_id.id if department.manager_id else False
             _logger.info(f"Setting department_manager_id to: {vals['department_manager_id']}")
 
+
         project = super().create(vals)
         _logger.info(f"Project created: {project.name} (ID: {project.id})")
 
-        if project.sale_order_id and project.sale_order_id.project_document_link:
-            project.document_upload_link = project.sale_order_id.project_document_link
-            _logger.info(f"Synced Teams link from SO")
 
-        # Set initial role statuses and send notifications
+        project = self.browse(project.id)
+
+        if project.sale_order_id:
+            so = project.sale_order_id
+            project._sync_handover_data_from_so(so)
+
         _logger.info("📧 Sending role assignment notifications...")
-
         if project.team_lead_id:
             project.team_lead_status = 'pending'
             project._send_role_assignment_notification('team_lead', project.team_lead_id)
@@ -250,12 +291,79 @@ class ProjectEnhancement(models.Model):
             project.project_manager_status = 'pending'
             project._send_role_assignment_notification('project_manager', project.project_manager)
 
-        # Send project creation email to PMO
         if project.pmo:
             self._send_project_creation_email(project)
 
         _logger.info("=" * 60)
         return project
+
+    def _sync_handover_data_from_so(self, so):
+        handover_note = so.sales_handover_note
+        document_link = so.project_document_link
+
+        # Get attachments from sale order (both custom field and chatter)
+        custom_attachments = so.project_attachments
+        chatter_attachments = self.env['ir.attachment'].sudo().search([
+            ('res_model', '=', 'sale.order'),
+            ('res_id', '=', so.id)
+        ])
+        all_attachments = custom_attachments | chatter_attachments
+
+        project_vals = {}
+
+        if handover_note:
+            project_vals.update({
+                'sales_handover_note': handover_note,
+                # 'description' is removed to prevent duplication
+            })
+            _logger.info("✅ Sales Handover Note synced during Project Creation from SO %s", so.name)
+
+        # if handover_note:
+        #     existing_desc = self.description or ""
+        #     combined_description = (
+        #         f"{handover_note}<br/><br/>{existing_desc}"
+        #         if existing_desc else handover_note
+        #     )
+        #     project_vals.update({
+        #         'sales_handover_note': handover_note,
+        #         'description': combined_description,
+        #     })
+        #     _logger.info("✅ Sales Handover Note synced during Project Creation from SO %s", so.name)
+
+        if document_link and hasattr(self, 'document_upload_link'):
+            project_vals.update({
+                'document_upload_link': document_link,
+            })
+            _logger.info("✅ Teams link synced from SO")
+
+        if project_vals:
+            self.sudo().write(project_vals)
+        if all_attachments:
+            _logger.info(f"📎 Transferring {len(all_attachments)} attachments from SO {so.name}")
+            for att in all_attachments:
+                try:
+                    # Check if attachment already exists
+                    existing = self.env['ir.attachment'].sudo().search([
+                        ('res_model', '=', 'project.project'),
+                        ('res_id', '=', self.id),
+                        ('name', '=', att.name),
+                    ], limit=1)
+
+                    if not existing:
+                        # Copy attachment to project
+                        att.sudo().copy({
+                            'res_model': 'project.project',
+                            'res_id': self.id,
+                            'name': att.name,
+                            'description': f"Copied from Sale Order {so.name}",
+                            'company_id': self.company_id.id or self.env.company.id,
+                        })
+                        _logger.info(f"  ✅ Attachment synced: {att.name}")
+                    else:
+                        _logger.info(f"  ⏭ Attachment already exists, skipping: {att.name}")
+                except Exception as e:
+                    _logger.error(f"  ❌ Failed syncing attachment {att.name}: {str(e)}")
+
 
     @api.depends('budget', 'budget_utilized', 'budget_alert_threshold')
     def _compute_budget_utilization(self):
@@ -612,9 +720,7 @@ class ProjectEnhancement(models.Model):
         department = self.env['hr.department'].sudo().browse(5)
         return department.manager_id.id if department and department.manager_id else False
 
-    # ADD THIS NEW METHOD - Send response notification to assigner
     def _send_role_response_notification(self, role, action):
-        """Send notification to the person who assigned the role when it's accepted/declined"""
         self.ensure_one()
 
         _logger.info(f"Sending {action} notification for {role} on project {self.name}")
@@ -896,7 +1002,9 @@ class ProjectEnhancement(models.Model):
     def _get_base_url(self):
         return self.env['ir.config_parameter'].sudo().get_param('web.base.url').rstrip('/')
 
-    @api.depends('task_ids.timesheet_ids.unit_amount', 'task_ids.timesheet_ids.employee_id', 'expense_ids.total_amount')
+    @api.depends('task_ids.timesheet_ids.unit_amount',
+                 'task_ids.timesheet_ids.employee_id',
+                 'expense_ids.total_amount', 'expense_ids.state')
     def _compute_budget_utilized(self):
         for project in self:
             total_time_cost = 0.0
@@ -904,36 +1012,34 @@ class ProjectEnhancement(models.Model):
 
             for task in project.task_ids:
                 for ts in task.timesheet_ids:
-                    employee_cost = ts.employee_id.timesheet_cost or 0.0
-                    total_time_cost += ts.unit_amount * employee_cost
+                    if ts.employee_id:
+                        # Safe access to real employee model
+                        employee = self.env['hr.employee'].browse(ts.employee_id.id).sudo()
+                        employee_cost = employee.timesheet_cost or 0.0
+                        total_time_cost += ts.unit_amount * employee_cost
 
             for exp in project.expense_ids:
-                total_expense_cost += exp.total_amount
+                if exp.state == 'approved':
+                    total_expense_cost += exp.total_amount or 0.0
 
             project.budget_utilized = total_time_cost + total_expense_cost
 
-        profitability = fields.Float(
-            string="Forecasted Profitability",
-            compute='_compute_profitability',
-            store=True,
-            groups="project.group_project_manager",
-            digits=(16, 2)
-        )
-
-    # correlation of project financial profitability with employee's profitability score
     @api.depends('task_ids.timesheet_ids')
     def _compute_employee_profitability_score(self):
         for project in self:
             total_score = 0.0
-            total_employees = set()
+            total_employees = 0
+            seen = set()
 
             for task in project.task_ids:
                 for ts in task.timesheet_ids:
-                    if ts.employee_id:
-                        total_score += ts.employee_id.profitability_score or 0.0
-                        total_employees.add(ts.employee_id.id)
+                    if ts.employee_id and ts.employee_id.id not in seen:
+                        seen.add(ts.employee_id.id)
+                        employee = self.env['hr.employee'].browse(ts.employee_id.id).sudo()
+                        total_score += employee.profitability_score or 0.0
+                        total_employees += 1
 
-            project.avg_employee_profitability = total_score / len(total_employees) if total_employees else 0.0
+            project.avg_employee_profitability = total_score / total_employees if total_employees else 0.0
 
     def _send_role_assignment_email(self, project, role):
 
@@ -1260,40 +1366,48 @@ class ProjectEnhancement(models.Model):
             return [val]
         return []
 
-    # NOTE: Keep your existing write method that has the change log functionality
-    # But make sure the one above (with notifications) is the one that runs first
-    # You may need to merge them. Here's the merged version:
-
     @api.model
     def search(self, args, offset=0, limit=None, order=None, count=False):
-
         current_user = self.env.user
+
+        # === Users with Full Access ===
         if (current_user.has_group('base.group_system') or
                 current_user.has_group('lba_profitability_module.group_project_manager') or
-                self.env.context.get('allow_all_projects')):  # Add a context bypass
+                current_user.has_group('lba_profitability_module.group_pmo') or
+                self.env.context.get('allow_all_projects')):
             return super().search(args, offset=offset, limit=limit, order=order, count=count)
 
         employee = current_user.employee_id
+        domain_parts = []
 
+        # === Role-based access (your original logic) ===
         if employee:
-            role_domain = [
-                '|', '|', '|', '|', '|',
+            domain_parts.extend([
                 ('pmo', '=', employee.id),
                 ('project_manager', '=', employee.id),
                 ('department_manager_id', '=', employee.id),
                 ('team_lead_id', '=', employee.id),
-                ('message_partner_ids', 'in', [current_user.partner_id.id]),
                 ('task_ids.assigned_employee_ids', '=', employee.id),
-            ]
+            ])
 
-            full_domain = expression.AND([args, role_domain])
+        domain_parts.extend([
+            ('create_uid', '=', current_user.id),
+            ('sale_order_id.create_uid', '=', current_user.id),
+            ('sale_order_id.user_id', '=', current_user.id),
+        ])
 
+        if current_user.sale_team_id:
+            domain_parts.append(('sale_order_id.team_id', '=', current_user.sale_team_id.id))
+
+        domain_parts.append(('message_partner_ids', 'in', [current_user.partner_id.id]))
+
+        if domain_parts:
+            user_domain = expression.OR([[(d[0], d[1], d[2])] for d in domain_parts])
+            full_domain = expression.AND([args, user_domain])
             return super().search(full_domain, offset=offset, limit=limit, order=order, count=count)
 
         fallback_domain = expression.AND([
             args,
             [('message_partner_ids', 'in', [current_user.partner_id.id])]
         ])
-
-        return super().search(fallback_domain,
-                              offset=offset, limit=limit, order=order, count=count)
+        return super().search(fallback_domain, offset=offset, limit=limit, order=order, count=count)

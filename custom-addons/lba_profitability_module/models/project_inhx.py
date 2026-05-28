@@ -659,7 +659,7 @@ class ProjectEnhancement(models.Model):
 
 
     def _get_pmo(self):
-        department = self.env['hr.department'].sudo().browse(5)
+        department = self.env['hr.department'].sudo().browse(30)
         return department.manager_id.id if department and department.manager_id else False
 
     def _send_role_response_notification(self, role, action):
