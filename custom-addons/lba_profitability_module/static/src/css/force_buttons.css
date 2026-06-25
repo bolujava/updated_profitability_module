@@ -1,0 +1,18 @@
+/* Force all accept/decline buttons to be visible */
+button[name="accept_department_manager"],
+button[name="accept_team_lead"],
+button[name="accept_project_manager"],
+button[name="%(action_decline_role_wizard)d"] {
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+/* Remove the invisible modifier class effect */
+button.o_invisible_modifier {
+    display: inline-block !important;
+}
+
+/* Override any attrs hiding */
+button[invisible="1"] {
+    display: inline-block !important;
+}

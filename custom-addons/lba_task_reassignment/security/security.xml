@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===== TASK READ ACCESS RULES ===== -->
+
+    <!-- PMO: Full access to all tasks -->
+    <record id="task_reassignment_task_read_pmo" model="ir.rule">
+        <field name="name">PMO: Full task access</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_pmo'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Project Manager: Read access to tasks in their projects -->
+    <record id="task_reassignment_task_read_pm" model="ir.rule">
+        <field name="name">PM: Task read access</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_project_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.project_manager', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Department Manager: Read access to tasks in their department -->
+    <record id="task_reassignment_task_read_dept_mgr" model="ir.rule">
+        <field name="name">Department Manager: Task read access</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_department_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.department_manager_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Team Lead: Read access to tasks in their projects -->
+    <record id="task_reassignment_task_read_team_lead" model="ir.rule">
+        <field name="name">Team Lead: Task read access</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_team_lead'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.team_lead_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- ===== REASSIGNMENT PERMISSION RULES ===== -->
+
+    <!-- PMO: Full reassignment access -->
+    <record id="task_reassignment_rule_pmo" model="ir.rule">
+        <field name="name">PMO: Full reassignment access</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_pmo'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Project Manager: Reassign tasks in their projects -->
+    <record id="task_reassignment_rule_pm" model="ir.rule">
+        <field name="name">PM: Reassign tasks in their projects</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_project_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.project_manager', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Department Manager: Reassign tasks in their department -->
+    <record id="task_reassignment_rule_dept_mgr" model="ir.rule">
+        <field name="name">Department Manager: Reassign tasks in their department</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_department_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.department_manager_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Team Lead: Reassign tasks of their team members -->
+    <record id="task_reassignment_rule_team_lead" model="ir.rule">
+        <field name="name">Team Lead: Reassign tasks of their team members</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_team_lead'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.team_lead_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- ===== REASSIGNMENT HISTORY RULES ===== -->
+
+    <!-- PMO: Full access to all reassignment history -->
+    <record id="task_reassignment_history_rule_pmo" model="ir.rule">
+        <field name="name">PMO: Full reassignment history access</field>
+        <field name="model_id" ref="model_task_reassignment_history"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_pmo'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Project Manager: Access to reassignment history in their projects -->
+    <record id="task_reassignment_history_rule_pm" model="ir.rule">
+        <field name="name">PM: Reassignment history access</field>
+        <field name="model_id" ref="model_task_reassignment_history"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_project_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('task_id.project_id.project_manager', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Department Manager: Access to reassignment history in their department -->
+    <record id="task_reassignment_history_rule_dept_mgr" model="ir.rule">
+        <field name="name">Department Manager: Reassignment history access</field>
+        <field name="model_id" ref="model_task_reassignment_history"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_department_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('task_id.project_id.department_manager_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Team Lead: Access to reassignment history in their projects -->
+    <record id="task_reassignment_history_rule_team_lead" model="ir.rule">
+        <field name="name">Team Lead: Reassignment history access</field>
+        <field name="model_id" ref="model_task_reassignment_history"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_team_lead'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('task_id.project_id.team_lead_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+</odoo>

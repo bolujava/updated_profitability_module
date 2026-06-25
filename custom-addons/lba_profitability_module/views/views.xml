@@ -72,6 +72,52 @@
                 </xpath>
             </field>
         </record>
+        <!-- Make customer field required on project form -->
+        <record id="view_project_project_form_require_customer" model="ir.ui.view">
+            <field name="name">project.project.form.require.customer</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Make phone and email required on customer form -->
+        <record id="view_partner_form_require_phone_email" model="ir.ui.view">
+            <field name="name">res.partner.form.require.phone.email</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='phone']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='email']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Move Department Information section to be directly below Customer info -->
+        <record id="view_project_project_form_move_department_info" model="ir.ui.view">
+            <field name="name">project.project.form.move.department.info</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="can_edit_project_manager" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='partner_id']/.." position="after">
+                    <group string="Department Information" name="department_info_moved">
+                        <field name="department_id" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
+                        <field name="department_manager_id" readonly="1"/>
+                        <field name="team_lead_id" force_save="1" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="status" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
 
         <!-- views/sale_order_views.xml -->
 <!--        <record id="view_order_form_project_title" model="ir.ui.view">-->
@@ -151,8 +197,37 @@
             <field name="res_model">decline.role.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-            <field name="context">{'active_id': active_id}</field> <!-- Pass the current project ID -->
+            <field name="context">{'active_id': active_id}</field>
         </record>
+
+        <record id="view_project_kanban_inherit_open_button" model="ir.ui.view">
+            <field name="name">project.project.kanban.open.button</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project_kanban"/>
+            <field name="arch" type="xml">
+                <!-- Add role fields as invisible -->
+                <xpath expr="//field[@name='name']" position="before">
+                    <field name="project_manager" invisible="1"/>
+                    <field name="team_lead_id" invisible="1"/>
+                    <field name="department_manager_id" invisible="1"/>
+                    <field name="id" invisible="1"/>
+                </xpath>
+
+                <!-- Add button - only visible to users with a role -->
+                <xpath expr="//div[hasclass('o_project_kanban_boxes')]" position="after">
+                    <div class="text-center mt8 mb8"
+                         attrs="{'invisible': [('project_manager', '=', False), ('team_lead_id', '=', False), ('department_manager_id', '=', False)]}">
+                        <button name="action_open_project_form"
+                                type="object"
+                                class="btn btn-primary btn-sm"
+                                style="width: calc(100% - 16px); margin: 8px;">
+                            <i class="fa fa-external-link"/> Open Project
+                        </button>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
 
         <record id="view_project_project_form_inherit" model="ir.ui.view">
             <field name="name">project.project.form.inherit</field>
@@ -162,63 +237,33 @@
                 <xpath expr="//form" position="attributes">
                     <attribute name="create">false</attribute>
                 </xpath>
+
                 <xpath expr="//sheet" position="inside">
                     <field name="is_edit_mode" invisible="1"/>
+                    <field name="department_manager_status" invisible="1"/>
+                    <field name="team_lead_status" invisible="1"/>
+                    <field name="project_manager_status" invisible="1"/>
+                    <field name="is_current_user_department_manager" invisible="1"/>
+                    <field name="is_current_user_team_lead" invisible="1"/>
+                    <field name="is_current_user_project_manager" invisible="1"/>
+                    <group invisible="1">
+                        <field name="can_accept_team_lead"/>
+                        <field name="can_accept_project_manager"/>
+                        <field name="can_accept_department_manager"/>
+                    </group>
                 </xpath>
+
                 <xpath expr="//header" position="attributes">
                     <attribute name="class">oe_form_header</attribute>
                 </xpath>
+
                 <xpath expr="//form//header" position="inside">
-
-
-                    <button name="%(action_project_change_log)d" type="action" class="oe_stat_button"
-                            icon="fa-cogs" string="View Changes"/>
-
-                    <button name="accept_team_lead" string="Accept Team Lead Role" type="object"
-                            class="btn-primary"
-                            attrs="{'invisible': [('can_accept_team_lead', '=', False)]}"/>
-
-                    <button name="%(action_decline_role_wizard)d"
-                            string="Decline Team Lead Role"
-                            type="action"
-                            class="btn-danger"
-                            attrs="{'invisible': [('can_accept_team_lead', '=', False)]}"
-                            context="{'default_project_id': active_id, 'default_role': 'team_lead'}"/>
-
-                    <button name="accept_project_manager" string="Accept Project Manager Role" type="object"
-                            class="btn-primary"
-                            attrs="{'invisible': [('can_accept_project_manager', '=', False)]}"/>
-
-                    <!-- Decline Project Manager Role -->
-                    <button name="%(action_decline_role_wizard)d"
-                            string="Decline Project Manager Role"
-                            type="action"
-                            class="btn-danger"
-                            attrs="{'invisible': [('can_accept_project_manager', '=', False)]}"
-                            context="{'default_project_id': active_id, 'default_role': 'project_manager'}"/>
-
-                    <button name="accept_department_manager" string="Accept Department Manager Role" type="object"
-                            class="btn-primary"
-                            attrs="{'invisible': [('can_accept_department_manager', '=', False)]}"/>
-
-                    <button name="%(action_decline_role_wizard)d"
-                            string="Decline Department Manager Role"
-                            type="action"
-                            class="btn-danger"
-                            attrs="{'invisible': [('can_accept_department_manager', '=', False)]}"
-                            context="{'default_project_id': active_id, 'default_role': 'department_manager'}"/>
-
-                    <!-- <field name="name" attrs="{'readonly': [('is_edit_mode', '=', False)]}" /> -->
-
+                    <button name="%(action_project_change_log)d" type="action" class="oe_stat_button" icon="fa-cogs" string="View Changes"/>
                 </xpath>
-                <!-- Add custom field before 'user_id' -->
+
                 <xpath expr="//field[@name='user_id']" position="before">
-                     <field name="document_upload_link"
-                           widget="url"
-                           placeholder="Synced from Sales Order..."
-                           string="Teams Link"
-                           readonly="1"/>
-                    <field name="pmo" readonly = "1"/>
+                    <field name="document_upload_link" widget="url" placeholder="Synced from Sales Order..." string="Teams Link" readonly="1"/>
+                    <field name="pmo" readonly="1"/>
                     <field name="current_user_id" invisible="1"/>
                     <field name="can_edit_pmo" invisible="1"/>
                     <field name="can_edit_project_manager" invisible="1"/>
@@ -228,9 +273,105 @@
                 <xpath expr="//field[@name='user_id']" position="replace">
                     <field name="project_manager" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
                     <field name="can_accept_project_manager" invisible="1"/>
-                    <field name="starting_date" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
-                    <field name="ending_date" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
+                    <field name="starting_date" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
+                    <field name="ending_date" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
                 </xpath>
+                <xpath expr="//notebook" position="before">
+                    <div class="o_horizontal_separator" style="margin: 10px 0px; padding: 0px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px 20px; margin: 0px; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.1);">
+
+                            <!-- Header with smaller icon -->
+                            <div style="display: flex; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">
+                                <i class="fa fa-handshake-o" style="font-size: 16px; color: white; margin-right: 8px;"></i>
+                                <span style="color: white; font-size: 14px; font-weight: 600;">Role Acceptance</span>
+                            </div>
+
+                            <!-- Three columns layout - FIXED ALIGNMENT -->
+                            <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+
+                                <!-- Project Manager Role -->
+                                <div style="flex: 1; min-width: 180px; background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                        <span style="color: white; font-size: 12px; font-weight: 500;">📋 Proj Mgr</span>
+                                        <div style="display: flex; gap: 6px;">
+                                            <button name="accept_project_manager" string="✓ Accept" type="object" class="btn btn-success" style="font-size: 11px; font-weight: bold; padding: 4px 12px; min-width: 70px;" attrs="{'invisible': ['|', ('project_manager_status', '!=', 'pending'), ('is_current_user_project_manager', '=', False)]}"/>
+                                            <button name="decline_project_manager" string="✗ Decline" type="object" class="btn btn-danger" style="font-size: 11px; font-weight: bold; padding: 4px 12px; min-width: 70px;" attrs="{'invisible': ['|', ('project_manager_status', '!=', 'pending'), ('is_current_user_project_manager', '=', False)]}"/>
+                                            <span style="color: #a5d6a7; font-size: 11px;" attrs="{'invisible': [('project_manager_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>
+                                            <span style="color: #ef9a9a; font-size: 11px;" attrs="{'invisible': [('project_manager_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>
+                                            <span style="color: #ffd54f; font-size: 11px;" attrs="{'invisible': [('project_manager_status', '!=', 'pending')]}"><i class="fa fa-clock-o"/> Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Department Manager Role -->
+                                <div style="flex: 1; min-width: 180px; background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                        <span style="color: white; font-size: 12px; font-weight: 500;">🏢 Dept Mgr</span>
+                                        <div style="display: flex; gap: 6px;">
+                                            <button name="accept_department_manager" string="✓ Accept" type="object" class="btn btn-success" style="font-size: 11px; font-weight: bold; padding: 4px 12px; min-width: 70px;" attrs="{'invisible': ['|', ('department_manager_status', '!=', 'pending'), ('is_current_user_department_manager', '=', False)]}"/>
+                                            <button name="decline_department_manager" string="✗ Decline" type="object" class="btn btn-danger" style="font-size: 11px; font-weight: bold; padding: 4px 12px; min-width: 70px;" attrs="{'invisible': ['|', ('department_manager_status', '!=', 'pending'), ('is_current_user_department_manager', '=', False)]}"/>
+                                            <span style="color: #a5d6a7; font-size: 11px;" attrs="{'invisible': [('department_manager_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>
+                                            <span style="color: #ef9a9a; font-size: 11px;" attrs="{'invisible': [('department_manager_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>
+                                            <span style="color: #ffd54f; font-size: 11px;" attrs="{'invisible': [('department_manager_status', '!=', 'pending')]}"><i class="fa fa-clock-o"/> Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Team Lead Role -->
+                                <div style="flex: 1; min-width: 180px; background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                        <span style="color: white; font-size: 12px; font-weight: 500;">👥 Team Lead</span>
+                                        <div style="display: flex; gap: 6px;">
+                                            <button name="accept_team_lead" string="✓ Accept" type="object" class="btn btn-success" style="font-size: 11px; font-weight: bold; padding: 4px 12px; min-width: 70px;" attrs="{'invisible': ['|', ('team_lead_status', '!=', 'pending'), ('is_current_user_team_lead', '=', False)]}"/>
+                                            <button name="decline_team_lead" string="✗ Decline" type="object" class="btn btn-danger" style="font-size: 11px; font-weight: bold; padding: 4px 12px; min-width: 70px;" attrs="{'invisible': ['|', ('team_lead_status', '!=', 'pending'), ('is_current_user_team_lead', '=', False)]}"/>
+                                            <span style="color: #a5d6a7; font-size: 11px;" attrs="{'invisible': [('team_lead_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>
+                                            <span style="color: #ef9a9a; font-size: 11px;" attrs="{'invisible': [('team_lead_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>
+                                            <span style="color: #ffd54f; font-size: 11px;" attrs="{'invisible': [('team_lead_status', '!=', 'pending')]}"><i class="fa fa-clock-o"/> Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+
+<!--                <xpath expr="//notebook" position="before">-->
+<!--                    <div class="o_horizontal_separator" style="margin: 15px 0px; padding: 0px;">-->
+<!--                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 20px; margin: 0px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">-->
+<!--                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">-->
+<!--                                <div style="display: flex; align-items: center; gap: 10px;">-->
+<!--                                    <i class="fa fa-handshake-o" style="font-size: 24px; color: white;"></i>-->
+<!--                                    <span style="color: white; font-size: 16px; font-weight: bold;">Role Acceptance:</span>-->
+<!--                                </div>-->
+
+<!--                                <div class="btn-group" role="group" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px;">-->
+<!--                                    <span style="color: white; font-weight: 500;">Project Mgr:</span>-->
+<!--                                    <button name="accept_project_manager" string="✓ ACCEPT" type="object" class="btn btn-success" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('project_manager_status', '!=', 'pending'), ('is_current_user_project_manager', '=', False)]}"/>-->
+<!--                                    <button name="decline_project_manager" string="✗ DECLINE" type="object" class="btn btn-danger" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('project_manager_status', '!=', 'pending'), ('is_current_user_project_manager', '=', False)]}"/>-->
+<!--                                    <span style="color: #a5d6a7; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('project_manager_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>-->
+<!--                                    <span style="color: #ef9a9a; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('project_manager_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>-->
+<!--                                </div>-->
+
+<!--                                <div class="btn-group" role="group" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px;">-->
+<!--                                    <span style="color: white; font-weight: 500;">Dept Manager:</span>-->
+<!--                                    <button name="accept_department_manager" string="✓ ACCEPT" type="object" class="btn btn-success" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('department_manager_status', '!=', 'pending'), ('is_current_user_department_manager', '=', False)]}"/>-->
+<!--                                    <button name="decline_department_manager" string="✗ DECLINE" type="object" class="btn btn-danger" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('department_manager_status', '!=', 'pending'), ('is_current_user_department_manager', '=', False)]}"/>-->
+<!--                                    <span style="color: #a5d6a7; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('department_manager_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>-->
+<!--                                    <span style="color: #ef9a9a; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('department_manager_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>-->
+<!--                                </div>-->
+
+<!--                                <div class="btn-group" role="group" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px;">-->
+<!--                                    <span style="color: white; font-weight: 500;">Team Lead:</span>-->
+<!--                                    <button name="accept_team_lead" string="✓ ACCEPT" type="object" class="btn btn-success" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('team_lead_status', '!=', 'pending'), ('is_current_user_team_lead', '=', False)]}"/>-->
+<!--                                    <button name="decline_team_lead" string="✗ DECLINE" type="object" class="btn btn-danger" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('team_lead_status', '!=', 'pending'), ('is_current_user_team_lead', '=', False)]}"/>-->
+<!--                                    <span style="color: #a5d6a7; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('team_lead_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>-->
+<!--                                    <span style="color: #ef9a9a; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('team_lead_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </xpath>-->
+
                 <xpath expr="//sheet/notebook" position="inside">
                     <page name="profitability" string="Profitability">
                         <group string="Profitability" invisible="1">
@@ -241,54 +382,19 @@
                         </group>
                     </page>
                 </xpath>
+
                 <xpath expr="//page[@name='profitability']/group" position="after">
                     <group string="Financial Summary">
                         <field name="currency_id" invisible="1"/>
                         <field name="total_hours" string="Total Hours Expected" readonly="1" invisible="1"/>
                         <field name="total_planned_hours" string="Total Expected Hours" readonly="1"/>
-                        <field name="delivered_hours"
-                               string="Delivered Hours"
-                               widget="float"
-                               options="{'digits': [0, 4]}"
-                               class="text-info font-weight-bold"/>
-
-                        <field name="total_cost"
-                               string="Total Internal Cost Price"
-                               widget="monetary"
-                               options="{'currency_field': 'currency_id', 'position': 'before'}"
-                               readonly="1"/>
-
-                        <field name="total_expenses"
-                               string="Other Expenses"
-                               widget="monetary"
-                               options="{'currency_field': 'currency_id', 'position': 'before'}"
-                               readonly="1"/>
-
-                        <field name="total_project_cost"
-                               string="Total Project Cost"
-                               widget="monetary"
-                               options="{'currency_field': 'currency_id', 'position': 'before'}"
-                               class="text-danger font-weight-bold"/>
-
-                        <field name="total_revenue"
-                               string="Total Selling Price"
-                               widget="monetary"
-                               options="{'currency_field': 'currency_id', 'position': 'before'}"
-                               class="text-success font-weight-bold"/>
-
-                        <field name="total_profit"
-                               string="Total Profit"
-                               widget="monetary"
-                               options="{'currency_field': 'currency_id'}"
-                               decoration-danger="total_revenue &lt; total_project_cost"
-                               decoration-success="total_revenue &gt;= total_project_cost"/>
-
-                        <field name="profit_margin"
-                               string="Profit Margin (%)"
-                               widget="float"
-                               options="{'digits': [0, 2]}"
-                               decoration-danger="total_revenue &lt; total_project_cost"
-                               decoration-success="total_revenue &gt;= total_project_cost"/>
+                        <field name="delivered_hours" string="Delivered Hours" widget="float" options="{'digits': [0, 4]}" class="text-info font-weight-bold"/>
+                        <field name="total_cost" string="Total Internal Cost Price" widget="monetary" options="{'currency_field': 'currency_id', 'position': 'before'}" readonly="1"/>
+                        <field name="total_expenses" string="Other Expenses" widget="monetary" options="{'currency_field': 'currency_id', 'position': 'before'}" readonly="1"/>
+                        <field name="total_project_cost" string="Total Project Cost" widget="monetary" options="{'currency_field': 'currency_id', 'position': 'before'}" class="text-danger font-weight-bold"/>
+                        <field name="total_revenue" string="Total Selling Price" widget="monetary" options="{'currency_field': 'currency_id', 'position': 'before'}" class="text-success font-weight-bold"/>
+                        <field name="total_profit" string="Total Profit" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-danger="total_revenue &lt; total_project_cost" decoration-success="total_revenue &gt;= total_project_cost"/>
+                        <field name="profit_margin" string="Profit Margin (%)" widget="float" options="{'digits': [0, 2]}" decoration-danger="total_revenue &lt; total_project_cost" decoration-success="total_revenue &gt;= total_project_cost"/>
                     </group>
                 </xpath>
 
@@ -303,20 +409,10 @@
                             </tree>
                         </field>
                         <field name="change_log_ids" widget="one2many_list" string="Change Log" readonly="1" invisible="1"/>
-
                     </page>
                 </xpath>
-                <xpath expr="//page[@name='settings']" position="inside">
-                    <group string="Department Information" >
-                        <field name="department_id" attrs="{'readonly': [('can_edit_project_manager', '=', False)]}"/>
-                        <field name="department_manager_id" readonly="1"/>
-                        <field name="can_accept_department_manager" invisible="1"/>
-<!--                        <field name="team_lead_id" attrs="{'readonly': [('can_edit_department_manager', '=', False)]}"/>-->
-                        <field name="team_lead_id" force_save="1" options="{'no_create': True, 'no_open': True}"/>
-                        <field name="can_accept_team_lead" invisible="1"/>
-                        <field name="status" attrs="{'readonly': [ ('can_edit_project_manager', '=', False)]}"/>
-                    </group>
 
+                <xpath expr="//page[@name='settings']" position="inside">
                     <group string="Expenses" colspan="5">
                         <field name="expense_ids" widget="one2many" options="{'no_create': True}"/>
                     </group>
@@ -328,8 +424,7 @@
                         <field name="forecasted_budget_overrun" readonly="1"/>
                         <field name="budget_alert_threshold" attrs="{'readonly': [('can_edit_pmo', '=', False)]}"/>
                         <field name="profitability"/>
-                        <field name="budget_status" readonly="1" widget="statusbar"
-                               statusbar_visible="safe,warning,exceeded" statusbar_colors="{'safe': 'green','warning': 'orange','exceeded': 'red'}"/>
+                        <field name="budget_status" readonly="1" widget="statusbar" statusbar_visible="safe,warning,exceeded" statusbar_colors="{'safe': 'green','warning': 'orange','exceeded': 'red'}"/>
                     </group>
                 </xpath>
             </field>
@@ -545,6 +640,7 @@
             <field name="inherit_id" ref="project.view_task_form2"/>
             <field name="arch" type="xml">
                 <field name="name" position="after">
+                    <field name="name_import" invisible="1"/>
                     <field name="assigned_employee_import" invisible="1"/>
                     <field name="job_rate_import" invisible="1"/>
                     <field name="task_starting_date_import" invisible="1"/>
@@ -561,6 +657,7 @@
             <field name="inherit_id" ref="project.view_task_tree2"/>
             <field name="arch" type="xml">
                 <xpath expr="//tree" position="inside">
+                    <field name="name_import" optional="hide"/>
                     <field name="assigned_employee_import" optional="hide"/>
                     <field name="job_rate_import" optional="hide"/>
                     <field name="task_starting_date_import" optional="hide"/>
@@ -607,25 +704,13 @@
             <field name="model">project.project</field>
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
-                <xpath expr="//sheet/notebook/page[@name='description_page']/field[@name='description']"
-                       position="after">
-                    <div style="margin-top:20px; padding:15px; background-color:#f8f9fa; border:1px solid #e0e0e0; border-radius:5px;">
-                        <h4 style="color:#7159c1; margin-bottom:8px;">
-                            <i class="fa fa-handshake-o"/>
-                            Sales Handover Note
-                        </h4>
-                        <field name="sales_handover_note"
-                               readonly="1"
-                               placeholder="No handover note from sales team"/>
-                    </div>
+                <xpath expr="//sheet/notebook/page[@name='description_page']/field[@name='description']" position="attributes">
+                    <attribute name="placeholder">Sales handover note will appear here automatically when the sales order is confirmed...</attribute>
                 </xpath>
+                <xpath expr="//sheet/notebook/page[@name='description_page']/div" position="replace"/>
             </field>
         </record>
 
-
-
-
-        <!-- Form View for Transport/Trip Approval Enhancement and Extension-->
         <record id="view_approval_request_form_inherit" model="ir.ui.view">
             <field name="name">approval.request.form.inherit</field>
             <field name="model">approval.request</field>

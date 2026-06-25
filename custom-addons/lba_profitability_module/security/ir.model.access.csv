@@ -2,8 +2,8 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_project_project_all,project.project.all,project.model_project_project,base.group_user,1,0,0,0
 access_project_project_manager,project.project.manager,project.model_project_project,group_project_manager,1,1,1,1
 access_project_project_pmo,project.project.pmo,project.model_project_project,group_pmo,1,1,1,1
-access_project_project_team_lead,project.project.team_lead,project.model_project_project,group_team_lead,1,0,0,0
-access_project_project_dept_manager,project.project.dept_manager,project.model_project_project,group_department_manager,1,0,0,0
+access_project_project_team_lead,project.project.team_lead,project.model_project_project,group_team_lead,1,1,0,0
+access_project_project_dept_manager,project.project.dept_manager,project.model_project_project,group_department_manager,1,1,0,0
 access_project_task_all,project.task.all,project.model_project_task,base.group_user,1,0,0,0
 access_project_task_manager,project.task.manager,project.model_project_task,group_project_manager,1,1,1,1
 access_project_job_rate_user,project.job.rate.user,model_project_job_rate,base.group_user,1,0,0,0
@@ -19,3 +19,5 @@ access_planning_slot_user,planning.slot.user,planning.model_planning_slot,base.g
 access_planning_slot_manager,planning.slot.manager,planning.model_planning_slot,group_project_manager,1,1,1,1
 access_decline_role_wizard,decline.role.wizard,model_decline_role_wizard,base.group_user,1,1,1,0
 access_project_project_sales,project.project.sales,project.model_project_project,sales_team.group_sale_salesman_all_leads,1,1,0,0
+access_project_change_log_dept_manager,project.change.log.dept.manager,model_project_change_log,group_department_manager,1,1,1,0
+access_project_change_log_team_lead,project.change.log.team.lead,model_project_change_log,group_team_lead,1,1,1,0

@@ -350,7 +350,8 @@ class SaleOrderLine(models.Model):
         store=True,
         readonly=False,
         default=0.0,
-        digits='Product Price'
+        digits='Product Price',
+        # digits=(16,2)
     )
 
     @api.depends('job_rate_id', 'product_id')
@@ -448,3 +449,13 @@ class ProjectProject(models.Model):
                 project.sale_attachment_ids = False
         # Force refresh of smart button
         # self.invalidate_recordset()
+
+    @api.constrains('partner_id', 'partner_phone', 'partner_email')
+    def _check_customer_contact(self):
+        for rec in self:
+            if rec.partner_id:
+                if not rec.partner_phone:
+                    raise ValidationError("Customer phone number is required.")
+
+                if not rec.partner_email:
+                    raise ValidationError("Customer email address is required.")

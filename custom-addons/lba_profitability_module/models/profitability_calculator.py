@@ -79,7 +79,7 @@ class ProjectEnhancement(models.Model):
         'task_ids.planned_hours',
         'task_ids.sale_line_id',
         'sale_order_id.order_line.product_uom_qty',
-        'sale_order_id.order_line.price_subtotal',  # Focused dependency for contract revenue
+        'sale_order_id.order_line.price_subtotal',
         'total_expenses',
     )
     def _compute_profitability(self):
@@ -102,7 +102,8 @@ class ProjectEnhancement(models.Model):
             if project.task_ids:
                 planned_hours_list = [task.planned_hours for task in project.task_ids if task.planned_hours]
                 if planned_hours_list:
-                    total_planned_hours = sum(planned_hours_list) / len(project.task_ids)
+                    total_planned_hours = sum(planned_hours_list)
+                    # total_planned_hours = sum(planned_hours_list) / len(project.task_ids)
                 else:
                     total_planned_hours = 0.0
 

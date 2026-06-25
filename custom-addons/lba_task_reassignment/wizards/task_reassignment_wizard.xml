@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_reassignment_wizard" model="ir.ui.view">
+        <field name="name">task.reassignment.wizard</field>
+        <field name="model">task.reassignment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reassign Task">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Reassign Employee to Task</h1>
+                        <p class="oe_subtitle">Reassign this task to a different employee</p>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="task_id" readonly="1"/>
+                            <field name="project_id" readonly="1"/>
+                            <field name="current_employee_id" readonly="1"/>
+                            <field name="employee_tasks_count" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="new_employee_id" required="1"/>
+                            <field name="transfer_time" help="Transfer all logged time to new employee"/>
+                            <field name="hours_to_transfer" readonly="1"
+                                   attrs="{'invisible': [('transfer_time', '=', False)]}"/>
+                            <field name="timesheets_to_transfer" readonly="1"
+                                   attrs="{'invisible': [('transfer_time', '=', False)]}"/>
+                        </group>
+                    </group>
+
+                    <group string="Reassignment Options">
+                        <field name="reassign_similar_tasks"
+                               help="Reassign all tasks in the same project and stage"/>
+                        <field name="similar_tasks_count"
+                               attrs="{'invisible': [('reassign_similar_tasks', '=', False)]}"/>
+                        <field name="reassign_all_employee_tasks"
+                               help="Reassign ALL tasks from this employee"/>
+                    </group>
+
+                    <footer>
+                        <button name="action_reassign" string="Reassign" type="object" class="btn-primary"/>
+                        <button name="action_cancel" string="Cancel" type="object" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_task_reassignment" model="ir.actions.act_window">
+        <field name="name">Reassign Task</field>
+        <field name="res_model">task.reassignment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+        <field name="binding_view_types">form</field>
+    </record>
+</odoo>

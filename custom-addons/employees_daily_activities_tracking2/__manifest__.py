@@ -3,7 +3,7 @@
     'version': '16.0.1.0.0',
     'summary': 'Track daily activities of technical and non-technical employees',
     'category': 'Human Resources',
-    'author': 'LOUS BETA',
+    'author': 'LOTUS BETA',
     'depends': ['hr', 'mail',  'calendar', 'helpdesk', 'crm', 'project', 'custom_training_management'],
     'data': [
         'security/security.xml',

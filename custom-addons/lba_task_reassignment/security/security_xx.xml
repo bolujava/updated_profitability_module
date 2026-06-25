@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- PMO: Full access to all tasks -->
+    <record id="task_reassignment_rule_pmo" model="ir.rule">
+        <field name="name">PMO: Full reassignment access</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_pmo'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Project Manager: Reassign tasks in their projects -->
+    <record id="task_reassignment_rule_pm" model="ir.rule">
+        <field name="name">PM: Reassign tasks in their projects</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_project_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.project_manager', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Department Manager: Reassign tasks in their department -->
+    <record id="task_reassignment_rule_dept_mgr" model="ir.rule">
+        <field name="name">Department Manager: Reassign tasks in their department</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_department_manager'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.department_manager_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+
+    <!-- Team Lead: Reassign tasks of their team members -->
+    <record id="task_reassignment_rule_team_lead" model="ir.rule">
+        <field name="name">Team Lead: Reassign tasks of their team members</field>
+        <field name="model_id" ref="model_project_task"/>
+        <field name="groups" eval="[(4, ref('lba_profitability_module.group_team_lead'))]"/>
+        <field name="global" eval="False"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[
+            ('project_id.team_lead_id', '=', user.employee_id.id)
+        ]</field>
+    </record>
+    <!-- PMO: Full access to all tasks -->
+<!--    <record id="task_reassignment_rule_pmo" model="ir.rule">-->
+<!--        <field name="name">PMO: Full reassignment access</field>-->
+<!--        <field name="model_id" ref="model_project_task"/>-->
+<!--        <field name="groups" eval="[(4, ref('lba_profitability_module.group_pmo'))]"/>-->
+<!--        <field name="global" eval="False"/>-->
+<!--        <field name="perm_read" eval="True"/>-->
+<!--        <field name="perm_write" eval="True"/>-->
+<!--        <field name="perm_create" eval="True"/>-->
+<!--        <field name="perm_unlink" eval="True"/>-->
+<!--        <field name="domain_force">[(1, '=', 1)]</field>-->
+<!--    </record>-->
+
+<!--    &lt;!&ndash; Project Manager: Reassign tasks in their projects &ndash;&gt;-->
+<!--    <record id="task_reassignment_rule_pm" model="ir.rule">-->
+<!--        <field name="name">PM: Reassign tasks in their projects</field>-->
+<!--        <field name="model_id" ref="model_project_task"/>-->
+<!--        <field name="groups" eval="[(4, ref('lba_profitability_module.group_project_manager'))]"/>-->
+<!--        <field name="global" eval="False"/>-->
+<!--        <field name="perm_read" eval="True"/>-->
+<!--        <field name="perm_write" eval="True"/>-->
+<!--        <field name="perm_create" eval="True"/>-->
+<!--        <field name="perm_unlink" eval="False"/>-->
+<!--        <field name="domain_force">[-->
+<!--            ('project_id.project_manager', '=', user.employee_id.id)-->
+<!--        ]</field>-->
+<!--    </record>-->
+
+<!--    &lt;!&ndash; Department Manager: Reassign tasks in their department &ndash;&gt;-->
+<!--    <record id="task_reassignment_rule_dept_mgr" model="ir.rule">-->
+<!--        <field name="name">Department Manager: Reassign tasks in their department</field>-->
+<!--        <field name="model_id" ref="model_project_task"/>-->
+<!--        <field name="groups" eval="[(4, ref('lba_profitability_module.group_department_manager'))]"/>-->
+<!--        <field name="global" eval="False"/>-->
+<!--        <field name="perm_read" eval="True"/>-->
+<!--        <field name="perm_write" eval="True"/>-->
+<!--        <field name="perm_create" eval="True"/>-->
+<!--        <field name="perm_unlink" eval="False"/>-->
+<!--        <field name="domain_force">[-->
+<!--            ('project_id.department_manager_id', '=', user.employee_id.id)-->
+<!--        ]</field>-->
+<!--    </record>-->
+
+<!--    &lt;!&ndash; Team Lead: Reassign tasks of their team members &ndash;&gt;-->
+<!--    <record id="task_reassignment_rule_team_lead" model="ir.rule">-->
+<!--        <field name="name">Team Lead: Reassign tasks of their team members</field>-->
+<!--        <field name="model_id" ref="model_project_task"/>-->
+<!--        <field name="groups" eval="[(4, ref('lba_profitability_module.group_team_lead'))]"/>-->
+<!--        <field name="global" eval="False"/>-->
+<!--        <field name="perm_read" eval="True"/>-->
+<!--        <field name="perm_write" eval="True"/>-->
+<!--        <field name="perm_create" eval="False"/>-->
+<!--        <field name="perm_unlink" eval="False"/>-->
+<!--        <field name="domain_force">[-->
+<!--            ('project_id.team_lead_id', '=', user.employee_id.id)-->
+<!--        ]</field>-->
+<!--    </record>-->
+</odoo>

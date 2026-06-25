@@ -45,7 +45,6 @@ class HrEmployee(models.Model):
         string="Timesheets"
     )
 
-    # FIXED: Added the required @api.depends decorator below to fix the DB crash
     profitability_score = fields.Float(
         string="Performance Efficiency (%)",
         compute="_compute_profitability_score",

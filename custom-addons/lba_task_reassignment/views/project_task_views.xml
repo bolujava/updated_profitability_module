@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form_reassign" model="ir.ui.view">
+        <field name="name">lba.task.form.reassign</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <!-- Add required fields as invisible (needed for attrs) -->
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="can_reassign" invisible="1"/>
+                <field name="reassigned_count" invisible="1"/>
+                <field name="last_reassignment_date" invisible="1"/>
+            </xpath>
+
+            <!-- Add button to header - opens wizard -->
+            <xpath expr="//header" position="inside">
+                <button name="action_reassign_task"
+                        string="Reassign Employee"
+                        type="object"
+                        class="btn-secondary"
+                        groups="lba_profitability_module.group_pmo,
+                                lba_profitability_module.group_project_manager,
+                                lba_profitability_module.group_department_manager,
+                                lba_profitability_module.group_team_lead"
+                        attrs="{'invisible': [('can_reassign', '=', False)]}"/>
+            </xpath>
+
+            <!-- Add stat button to button box - opens REASSIGNMENT HISTORY -->
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="action_open_reassignment_history"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exchange"
+                        groups="lba_profitability_module.group_pmo,
+                                lba_profitability_module.group_project_manager,
+                                lba_profitability_module.group_department_manager,
+                                lba_profitability_module.group_team_lead"
+                        attrs="{'invisible': [('can_reassign', '=', False)]}">
+                    <field name="reassigned_count" widget="statinfo" string="Reassignments"/>
+                </button>
+            </xpath>
+
+            <!-- Add reassignment history page -->
+            <xpath expr="//page[@name='extra_info']" position="before">
+                <page name="reassignment_history" string="Reassignment History">
+                    <group>
+                        <field name="reassigned_count" readonly="1"/>
+                        <field name="last_reassignment_date" readonly="1"/>
+                    </group>
+                    <field name="reassignment_history_ids" nolabel="1">
+                        <tree>
+                            <field name="reassigned_date"/>
+                            <field name="from_employee_id"/>
+                            <field name="to_employee_id"/>
+                            <field name="reassigned_by_id"/>
+                            <field name="transfer_time" widget="boolean"/>
+                            <field name="hours_transferred" sum="Total Hours"/>
+                            <field name="timesheets_transferred"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

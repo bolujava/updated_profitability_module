@@ -34,9 +34,10 @@
     'assets': {
         'web.assets_backend': [
             'lba_profitability_module/static/src/css/sticky_header.css',
+            'lba_profitability_module/static/src/css/force_buttons.css',
+            'lba_profitability_module/static/src/js/force_buttons.js',
         ],
     },
-
     'installable': True,
     'application': False,
     'auto_install': False,
