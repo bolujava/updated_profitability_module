@@ -24,7 +24,7 @@ class TaskReassignmentWizard(models.TransientModel):
     )
 
     reassign_all_employee_tasks = fields.Boolean(
-        string='Reassign All Tasks',
+        string='Reassign All Tasks Across All Projects',
         default=False,
         help='Reassign all tasks from this employee'
     )
