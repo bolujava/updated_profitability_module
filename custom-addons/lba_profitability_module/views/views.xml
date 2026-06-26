@@ -151,7 +151,6 @@
 
                     <!-- Teams / Document Link -->
                     <field name="project_document_link"
-                           widget="url"
                            placeholder="Paste Microsoft Teams channel link for project documents..."/>
 
                 </xpath>
@@ -262,7 +261,7 @@
                 </xpath>
 
                 <xpath expr="//field[@name='user_id']" position="before">
-                    <field name="document_upload_link" widget="url" placeholder="Synced from Sales Order..." string="Teams Link" readonly="1"/>
+                    <field name="document_upload_link" placeholder="Synced from Sales Order..." string="Teams Link" readonly="1"/>
                     <field name="pmo" readonly="1"/>
                     <field name="current_user_id" invisible="1"/>
                     <field name="can_edit_pmo" invisible="1"/>
@@ -334,43 +333,6 @@
                         </div>
                     </div>
                 </xpath>
-
-<!--                <xpath expr="//notebook" position="before">-->
-<!--                    <div class="o_horizontal_separator" style="margin: 15px 0px; padding: 0px;">-->
-<!--                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 20px; margin: 0px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">-->
-<!--                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">-->
-<!--                                <div style="display: flex; align-items: center; gap: 10px;">-->
-<!--                                    <i class="fa fa-handshake-o" style="font-size: 24px; color: white;"></i>-->
-<!--                                    <span style="color: white; font-size: 16px; font-weight: bold;">Role Acceptance:</span>-->
-<!--                                </div>-->
-
-<!--                                <div class="btn-group" role="group" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px;">-->
-<!--                                    <span style="color: white; font-weight: 500;">Project Mgr:</span>-->
-<!--                                    <button name="accept_project_manager" string="✓ ACCEPT" type="object" class="btn btn-success" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('project_manager_status', '!=', 'pending'), ('is_current_user_project_manager', '=', False)]}"/>-->
-<!--                                    <button name="decline_project_manager" string="✗ DECLINE" type="object" class="btn btn-danger" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('project_manager_status', '!=', 'pending'), ('is_current_user_project_manager', '=', False)]}"/>-->
-<!--                                    <span style="color: #a5d6a7; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('project_manager_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>-->
-<!--                                    <span style="color: #ef9a9a; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('project_manager_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>-->
-<!--                                </div>-->
-
-<!--                                <div class="btn-group" role="group" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px;">-->
-<!--                                    <span style="color: white; font-weight: 500;">Dept Manager:</span>-->
-<!--                                    <button name="accept_department_manager" string="✓ ACCEPT" type="object" class="btn btn-success" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('department_manager_status', '!=', 'pending'), ('is_current_user_department_manager', '=', False)]}"/>-->
-<!--                                    <button name="decline_department_manager" string="✗ DECLINE" type="object" class="btn btn-danger" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('department_manager_status', '!=', 'pending'), ('is_current_user_department_manager', '=', False)]}"/>-->
-<!--                                    <span style="color: #a5d6a7; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('department_manager_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>-->
-<!--                                    <span style="color: #ef9a9a; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('department_manager_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>-->
-<!--                                </div>-->
-
-<!--                                <div class="btn-group" role="group" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px;">-->
-<!--                                    <span style="color: white; font-weight: 500;">Team Lead:</span>-->
-<!--                                    <button name="accept_team_lead" string="✓ ACCEPT" type="object" class="btn btn-success" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('team_lead_status', '!=', 'pending'), ('is_current_user_team_lead', '=', False)]}"/>-->
-<!--                                    <button name="decline_team_lead" string="✗ DECLINE" type="object" class="btn btn-danger" style="font-size: 14px; font-weight: bold; padding: 8px 20px; min-width: 100px;" attrs="{'invisible': ['|', ('team_lead_status', '!=', 'pending'), ('is_current_user_team_lead', '=', False)]}"/>-->
-<!--                                    <span style="color: #a5d6a7; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('team_lead_status', '!=', 'accepted')]}"><i class="fa fa-check-circle"/> Accepted</span>-->
-<!--                                    <span style="color: #ef9a9a; font-size: 12px; margin-left: 10px;" attrs="{'invisible': [('team_lead_status', '!=', 'declined')]}"><i class="fa fa-times-circle"/> Declined</span>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </xpath>-->
 
                 <xpath expr="//sheet/notebook" position="inside">
                     <page name="profitability" string="Profitability">
@@ -477,28 +439,18 @@
             <field name="inherit_id" ref="project.view_project_project_filter"/>
             <field name="arch" type="xml">
                 <xpath expr="//search" position="inside">
-                        <field name="department_id"/>
-                        <field name="status"/>
-                        <field name="project_manager"/>
-                        <field name="team_lead_id"/>
-                        <field name="task_names" string="Task Names"/>
-                        <filter name="task" string="Tasks" domain="[('task_ids', '!=', False)]"/>
-                        <filter string="Active" name="active"
-                                domain="[('status', '=', 'active')]" />
-                        <filter string="Closed" name="closed" domain="[('status', '=', 'closed')]" />
-                        <filter string="On Hold" name="on_hold" domain="[('status', '=', 'on_hold')]"/>
-                        <filter string="De-prioritized" name="deprioritized" domain="[('status', '=', 'deprioritized')]"/>
+                    <field name="department_id"/>
+                    <field name="status"/>
+                    <field name="project_manager"/>
+                    <field name="team_lead_id"/>
                 </xpath>
 
                 <xpath expr="//search/group" position="inside">
-                            <!-- <group expand="0" string="Group By"> -->
-                                <filter name="group_by_department_id" string="Department" context="{'group_by':'department_id'}"/>
-                                <filter name="group_by_status" string="Status" context="{'group_by':'status'}"/>
-                                <filter name="group_task" string="Tasks" context="{'group_by': 'task_ids'}"/>
-                                <filter name="group_starting_date" string="Starting Date" domain="[]" context="{'group_by': 'starting_date'}"/>
-                                <filter name="group_ending_date" string="Ending Date" domain="[]" context="{'group_by': 'ending_date'}"/>
-                            <!-- </group> -->
-                    </xpath>
+                    <filter name="group_by_department" string="Department" context="{'group_by':'department_id'}"/>
+                    <filter name="group_by_status" string="Status" context="{'group_by':'status'}"/>
+                    <filter name="group_by_starting_date" string="Starting Date" context="{'group_by':'starting_date'}"/>
+                    <filter name="group_by_ending_date" string="Ending Date" context="{'group_by':'ending_date'}"/>
+                </xpath>
             </field>
         </record>
         <record id="default_project_filter_active" model="ir.filters">
@@ -731,7 +683,7 @@
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
                 <xpath expr="//notebook" position="inside">
-                    <page string="Sales Documents" name="sales_documents" attrs="{'invisible': [('sale_order_id', '=', False)]}">
+                    <page string="Project Documents" name="sales_documents" attrs="{'invisible': [('sale_order_id', '=', False)]}">
                         <group string="Documents from Sales Order">
                             <field name="sale_attachment_ids"
                                    widget="many2many_binary"

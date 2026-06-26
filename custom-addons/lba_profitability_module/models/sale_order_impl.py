@@ -15,6 +15,8 @@ class SaleOrder(models.Model):
     )
 
     sales_handover_note = fields.Html(string="Sales Handover Note")
+    project_title = fields.Char(string="Project Title")
+
 
     @api.constrains('project_document_link')
     def _check_project_document_link(self):
@@ -297,9 +299,6 @@ class SaleOrder(models.Model):
         return self.env['project.job.rate'].search([
             ('product_id', '=', product.id)
         ], limit=1)
-
-    project_title = fields.Char(string="Project Title")
-
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
